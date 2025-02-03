@@ -1,0 +1,163 @@
+[build-system]
+requires = [
+    "hatchling>=1.21.0",
+    "hatch-vcs>=0.3.0",
+]
+build-backend = "hatchling.build"
+
+
+[project]
+name = "twat-pipeline"
+dynamic = ["version"]
+description = "Video processing pipeline utilities using Prefect for workflow management"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+keywords = ["pipeline", "workflow", "prefect", "video", "audio", "transcription"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+]
+
+dependencies = [
+    "prefect>=2.14.0",
+    "pydantic>=2.0.0",
+]
+
+
+[[project.authors]]
+name = "Adam Twardoch"
+email = "adam+github@twardoch.com"
+
+
+[project.urls]
+Documentation = "https://github.com/twardoch/twat-pipeline#readme"
+Issues = "https://github.com/twardoch/twat-pipeline/issues"
+Source = "https://github.com/twardoch/twat-pipeline"
+
+
+[project.entry-points."twat.plugins"]
+pipeline = "twat_pipeline"
+
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.version.raw-options]
+version_scheme = "post-release"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/twat_pipeline"]
+
+[tool.hatch.build.hooks.vcs]
+version-file = "src/twat_pipeline/__version__.py"
+
+
+
+[tool.hatch.envs.default]
+dependencies = [
+    "pytest",
+    "pytest-cov",
+    "mypy>=1.0.0",
+    "ruff>=0.1.0",
+]
+
+
+[tool.hatch.envs.default.scripts]
+test = "pytest {args:tests}"
+test-cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=src/twat_pipeline --cov=tests {args:tests}"
+type-check = "mypy src/twat_pipeline tests"
+lint = ["ruff check src/twat_pipeline tests", "ruff format src/twat_pipeline tests"]
+
+
+[[tool.hatch.envs.all.matrix]]
+python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
+
+
+[tool.hatch.envs.lint]
+detached = true
+dependencies = [
+    "black>=23.1.0",
+    "mypy>=1.0.0",
+    "ruff>=0.1.0",
+]
+
+
+[tool.hatch.envs.lint.scripts]
+typing = "mypy --install-types --non-interactive {args:src/twat_pipeline tests}"
+style = ["ruff check {args:.}", "ruff format {args:.}"]
+fmt = ["ruff format {args:.}", "ruff check --fix {args:.}"]
+all = ["style", "typing"]
+
+
+[tool.black]
+target-version = ["py38"]
+line-length = 88
+skip-string-normalization = true
+
+
+[tool.ruff]
+target-version = "py38"
+line-length = 88
+select = [
+    "A",
+    "ARG",
+    "B",
+    "C",
+    "DTZ",
+    "E",
+    "EM",
+    "F",
+    "FBT",
+    "I",
+    "ICN",
+    "ISC",
+    "N",
+    "PLC",
+    "PLE",
+    "PLR",
+    "PLW",
+    "Q",
+    "RUF",
+    "S",
+    "T",
+    "TID",
+    "UP",
+    "W",
+    "YTT",
+]
+ignore = [
+    "PLR0913",  # Too many arguments to function call
+    "ISC001",   # Implicit string concatenation
+]
+
+
+[tool.ruff.per-file-ignores]
+"tests/*" = ["S101"]
+
+
+[tool.coverage.run]
+source_pkgs = ["twat_pipeline", "tests"]
+branch = true
+parallel = true
+omit = [
+    "src/twat_pipeline/__about__.py",
+]
+
+
+[tool.coverage.paths]
+twat_pipeline = ["src/twat_pipeline", "*/twat-pipeline/src/twat_pipeline"]
+tests = ["tests", "*/twat-pipeline/tests"]
+
+
+[tool.coverage.report]
+exclude_lines = [
+    "no cov",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+] 
