@@ -2,7 +2,6 @@
 
 from functools import cached_property
 from pathlib import Path
-from typing import Tuple
 
 from prefect import flow, task
 from pydantic import BaseModel, computed_field
@@ -16,14 +15,12 @@ def extract_audio_task(video_path: Path, audio_path: Path) -> None:
         video_path: Path to the input video file
         audio_path: Path where the extracted audio should be saved
     """
-    print(f"Extracting audio from {video_path} to {audio_path}")
 
     # Simulate fetching video metadata as JSON
     import json
     import time
     from random import randint
 
-    print("Fetching video metadata...")
     time.sleep(2)  # Simulate API call
 
     metadata = {
@@ -34,10 +31,8 @@ def extract_audio_task(video_path: Path, audio_path: Path) -> None:
         "sample_rate": 44100,
     }
 
-    print("Processing audio chunks...")
-    chunk_size = metadata["duration"] // 10
-    for i in range(10):
-        print(f"Processing chunk {i + 1}/10...")
+    metadata["duration"] // 10
+    for _i in range(10):
         time.sleep(0.5)  # Simulate processing time
 
     # Save simulated audio and metadata
@@ -54,7 +49,6 @@ def generate_transcript_task(audio_path: Path) -> str:
     Returns:
         Generated transcript text
     """
-    print(f"Generating transcript from {audio_path}")
 
     import json
     import time
@@ -63,7 +57,6 @@ def generate_transcript_task(audio_path: Path) -> str:
     # Simulate loading audio metadata
     metadata = json.loads(audio_path.read_text())
 
-    print("Initializing speech recognition model...")
     time.sleep(1.5)
 
     # Simulate processing chunks with progress
@@ -88,8 +81,7 @@ def generate_transcript_task(audio_path: Path) -> str:
     ]
 
     transcript_parts = []
-    for i in range(chunks):
-        print(f"Transcribing chunk {i + 1}/{chunks}...")
+    for _i in range(chunks):
         time.sleep(0.3)  # Simulate API call and processing
         # Generate some random text
         chunk_text = " ".join(choice(words) for _ in range(randint(5, 15)))
@@ -99,7 +91,7 @@ def generate_transcript_task(audio_path: Path) -> str:
 
 
 @flow
-def process_video_flow(video_path: Path) -> Tuple[Path, str]:
+def process_video_flow(video_path: Path) -> tuple[Path, str]:
     """Process a video file to extract audio and generate transcript.
 
     Args:

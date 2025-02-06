@@ -26,8 +26,8 @@ from .task import (
 )
 
 __all__ = [
-    "__version__",
     "VideoTranscript",
+    "__version__",
     "extract_audio_task",
     "generate_transcript_task",
     "process_video_flow",
