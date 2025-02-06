@@ -7,13 +7,13 @@ build-backend = "hatchling.build"
 
 
 [project]
-name = "twat-pipeline"
+name = "twat-task"
 dynamic = ["version"]
-description = "Video processing pipeline utilities using Prefect for workflow management"
+description = "Video processing task utilities using Prefect for workflow management"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
-keywords = ["pipeline", "workflow", "prefect", "video", "audio", "transcription"]
+keywords = ["task", "workflow", "prefect", "video", "audio", "transcription"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Programming Language :: Python",
@@ -27,6 +27,7 @@ classifiers = [
 dependencies = [
     "prefect>=2.14.0",
     "pydantic>=2.0.0",
+    "twat>=0.0.1",
 ]
 
 
@@ -36,13 +37,13 @@ email = "adam+github@twardoch.com"
 
 
 [project.urls]
-Documentation = "https://github.com/twardoch/twat-pipeline#readme"
-Issues = "https://github.com/twardoch/twat-pipeline/issues"
-Source = "https://github.com/twardoch/twat-pipeline"
+Documentation = "https://github.com/twardoch/twat-task#readme"
+Issues = "https://github.com/twardoch/twat-task/issues"
+Source = "https://github.com/twardoch/twat-task"
 
 
 [project.entry-points."twat.plugins"]
-pipeline = "twat_pipeline"
+task = "twat_task"
 
 
 [tool.hatch.version]
@@ -52,10 +53,10 @@ source = "vcs"
 version_scheme = "post-release"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/twat_pipeline"]
+packages = ["src/twat_task"]
 
 [tool.hatch.build.hooks.vcs]
-version-file = "src/twat_pipeline/__version__.py"
+version-file = "src/twat_task/__version__.py"
 
 
 
@@ -65,18 +66,22 @@ dependencies = [
     "pytest-cov",
     "mypy>=1.0.0",
     "ruff>=0.1.0",
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
 ]
 
 
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"
-test-cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=src/twat_pipeline --cov=tests {args:tests}"
-type-check = "mypy src/twat_pipeline tests"
-lint = ["ruff check src/twat_pipeline tests", "ruff format src/twat_pipeline tests"]
+test-cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=src/twat_task --cov=tests {args:tests}"
+type-check = "mypy src/twat_task tests"
+lint = ["ruff check src/twat_task tests", "ruff format src/twat_task tests"]
 
 
 [[tool.hatch.envs.all.matrix]]
-python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
+python = ["3.10", "3.11", "3.12"]
 
 
 [tool.hatch.envs.lint]
@@ -89,22 +94,22 @@ dependencies = [
 
 
 [tool.hatch.envs.lint.scripts]
-typing = "mypy --install-types --non-interactive {args:src/twat_pipeline tests}"
+typing = "mypy --install-types --non-interactive {args:src/twat_task tests}"
 style = ["ruff check {args:.}", "ruff format {args:.}"]
 fmt = ["ruff format {args:.}", "ruff check --fix {args:.}"]
 all = ["style", "typing"]
 
 
 [tool.black]
-target-version = ["py38"]
+target-version = ["py310"]
 line-length = 88
 skip-string-normalization = true
 
 
 [tool.ruff]
-target-version = "py38"
+target-version = "py310"
 line-length = 88
-select = [
+lint.extend-select = [
     "A",
     "ARG",
     "B",
@@ -131,9 +136,10 @@ select = [
     "W",
     "YTT",
 ]
-ignore = [
-    "PLR0913",  # Too many arguments to function call
-    "ISC001",   # Implicit string concatenation
+lint.ignore = [
+    "ARG001", # Unused function argument
+    "E501",   # Line too long
+    "I001",
 ]
 
 
@@ -141,18 +147,33 @@ ignore = [
 "tests/*" = ["S101"]
 
 
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+
+
 [tool.coverage.run]
-source_pkgs = ["twat_pipeline", "tests"]
+source_pkgs = ["twat_task", "tests"]
 branch = true
 parallel = true
 omit = [
-    "src/twat_pipeline/__about__.py",
+    "src/twat_task/__about__.py",
 ]
 
 
 [tool.coverage.paths]
-twat_pipeline = ["src/twat_pipeline", "*/twat-pipeline/src/twat_pipeline"]
-tests = ["tests", "*/twat-pipeline/tests"]
+twat_task = ["src/twat_task", "*/twat-task/src/twat_task"]
+tests = ["tests", "*/twat-task/tests"]
 
 
 [tool.coverage.report]
@@ -160,4 +181,62 @@ exclude_lines = [
     "no cov",
     "if __name__ == .__main__.:",
     "if TYPE_CHECKING:",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-xdist>=3.5.0",  # For parallel test execution
+    "pytest-benchmark[histogram]>=4.0.0",  # For performance testing
+]
+
+dev = [
+    "pre-commit>=3.6.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+]
+
+all = [
+    "pre-commit>=3.6.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-xdist>=3.5.0",
+    "pytest-benchmark[histogram]>=4.0.0",
+]
+
+[tool.hatch.envs.test]
+dependencies = [".[test]"]
+
+[tool.hatch.envs.test.scripts]
+test = "python -m pytest -n auto {args:tests}"
+test-cov = "python -m pytest -n auto --cov-report=term-missing --cov-config=pyproject.toml --cov=src/twat_task --cov=tests {args:tests}"
+bench = "python -m pytest -v -p no:briefcase tests/test_benchmark.py --benchmark-only"
+bench-save = "python -m pytest -v -p no:briefcase tests/test_benchmark.py --benchmark-only --benchmark-json=benchmark/results.json"
+
+[tool.pytest.ini_options]
+markers = ["benchmark: marks tests as benchmarks (select with '-m benchmark')"]
+addopts = "-v -p no:briefcase"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+filterwarnings = ["ignore::DeprecationWarning", "ignore::UserWarning"]
+asyncio_mode = "auto"
+
+[tool.pytest-benchmark]
+min_rounds = 100
+min_time = 0.1
+histogram = true
+storage = "file"
+save-data = true
+compare = [
+    "min",    # Minimum time
+    "max",    # Maximum time
+    "mean",   # Mean time
+    "stddev", # Standard deviation
+    "median", # Median time
+    "iqr",    # Inter-quartile range
+    "ops",    # Operations per second
+    "rounds", # Number of rounds
 ] 

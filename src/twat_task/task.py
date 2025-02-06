@@ -1,24 +1,8 @@
-#!/usr/bin/env python3
-"""
-Video processing pipeline utilities using Prefect for workflow management.
-
-This module provides a set of tasks and flows for processing video files,
-including audio extraction and transcription. It uses Prefect for workflow
-management and Pydantic for data validation.
-
-Example:
-    from twat_pipeline import VideoTranscript
-    from pathlib import Path
-
-    # Process a video file
-    vt = VideoTranscript(video_path=Path("video.mp4"))
-    print("Audio path:", vt.audio_path)
-    print("Transcript:", vt.text_transcript)
-"""
+"""Core task functionality for video processing using Prefect."""
 
 from functools import cached_property
 from pathlib import Path
-from typing import Any, Optional, Tuple, cast
+from typing import Tuple
 
 from prefect import flow, task
 from pydantic import BaseModel, computed_field
@@ -26,18 +10,11 @@ from pydantic import BaseModel, computed_field
 
 @task(retries=2)
 def extract_audio_task(video_path: Path, audio_path: Path) -> None:
-    """
-    Extract audio from video file.
-
-    This task simulates audio extraction from a video file. In a real
-    implementation, this would use a library like moviepy or ffmpeg.
+    """Extract audio from video, simulating a long-running process.
 
     Args:
         video_path: Path to the input video file
         audio_path: Path where the extracted audio should be saved
-
-    Note:
-        Currently uses a mock implementation for demonstration.
     """
     print(f"Extracting audio from {video_path} to {audio_path}")
 
@@ -69,20 +46,13 @@ def extract_audio_task(video_path: Path, audio_path: Path) -> None:
 
 @task(retries=2)
 def generate_transcript_task(audio_path: Path) -> str:
-    """
-    Generate transcript from audio file.
-
-    This task simulates speech recognition and transcription. In a real
-    implementation, this would use a service like Whisper or Google Speech-to-Text.
+    """Generate transcript from audio, simulating API calls and processing.
 
     Args:
         audio_path: Path to the input audio file
 
     Returns:
-        str: The generated transcript text
-
-    Note:
-        Currently uses a mock implementation for demonstration.
+        Generated transcript text
     """
     print(f"Generating transcript from {audio_path}")
 
@@ -130,20 +100,15 @@ def generate_transcript_task(audio_path: Path) -> str:
 
 @flow
 def process_video_flow(video_path: Path) -> Tuple[Path, str]:
-    """
-    Process a video file to extract audio and generate transcript.
-
-    This flow coordinates the video processing tasks:
-    1. Extract audio from video (if not already done)
-    2. Generate transcript from the audio
+    """Process a video file to extract audio and generate transcript.
 
     Args:
         video_path: Path to the input video file
 
     Returns:
-        Tuple[Path, str]: A tuple containing:
-            - Path to the extracted audio file
-            - Generated transcript text
+        Tuple containing:
+        - Path to the extracted audio file
+        - Generated transcript text
     """
     audio = video_path.with_suffix(".mp3")
     # Only extract audio if the file does not exist
@@ -154,17 +119,16 @@ def process_video_flow(video_path: Path) -> Tuple[Path, str]:
 
 
 class VideoTranscript(BaseModel):
-    """
-    A Pydantic model for managing video transcription.
+    """Pydantic model for video transcription with computed fields.
 
-    This class provides a high-level interface for processing video files
-    and accessing their transcripts. It uses Prefect flows for processing
-    and Pydantic for data validation.
+    This model handles the video processing task, including audio extraction
+    and transcript generation. The processing is done lazily when the computed
+    fields are accessed.
 
     Attributes:
         video_path: Path to the input video file
-        audio_path: Computed path to the extracted audio file
-        text_transcript: Generated transcript text
+        audio_path: Computed field containing path to extracted audio
+        text_transcript: Computed field containing generated transcript
     """
 
     video_path: Path
@@ -172,23 +136,13 @@ class VideoTranscript(BaseModel):
     @computed_field
     @cached_property
     def audio_path(self) -> Path:
-        """Get the path to the extracted audio file."""
-        # Trigger the Prefect flow to process the video
+        """Get path to extracted audio file, processing video if needed."""
         audio, _ = process_video_flow(self.video_path)
         return audio
 
     @computed_field
     @cached_property
     def text_transcript(self) -> str:
-        """Get the transcript text."""
-        # Ensure audio extraction happens first
+        """Get transcript text, processing video and audio if needed."""
         _, transcript = process_video_flow(self.video_path)
         return transcript
-
-
-# Example usage
-if __name__ == "__main__":
-    # Assume "video.mp4" exists; audio and transcript will be generated on demand
-    vt = VideoTranscript(video_path=Path("video.mp4"))
-    print("Audio path:", vt.audio_path)
-    print("Transcript:", vt.text_transcript)
