@@ -25,7 +25,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "prefect>=2.14.0",
+    "prefect>=3.1.0",
     "pydantic>=2.0.0",
     "twat>=1.0.0",
 ]

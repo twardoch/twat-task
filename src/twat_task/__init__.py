@@ -17,13 +17,8 @@ Example:
 
 from importlib import metadata
 
-from .__version__ import version as __version__
-from .task import (
-    VideoTranscript,
-    extract_audio_task,
-    generate_transcript_task,
-    process_video_flow,
-)
+from twat_task.__version__ import version as __version__
+from twat_task.task import VideoTranscript, extract_audio_task, generate_transcript_task, process_video_flow
 
 __all__ = [
     "VideoTranscript",
