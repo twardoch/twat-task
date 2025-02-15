@@ -1,7 +1,9 @@
 """Core task functionality for video processing using Prefect."""
+
 from __future__ import annotations
 
 from functools import cached_property
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from prefect import flow, task

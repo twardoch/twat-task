@@ -15,6 +15,7 @@ Example:
     print("Audio path:", vt.audio_path)
     print("Transcript:", vt.text_transcript)
 """
+
 from __future__ import annotations
 
 from functools import cached_property
