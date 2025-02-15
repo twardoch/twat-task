@@ -1,10 +1,14 @@
 """Core task functionality for video processing using Prefect."""
+from __future__ import annotations
 
 from functools import cached_property
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from prefect import flow, task
 from pydantic import BaseModel, computed_field
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 @task(retries=2)
