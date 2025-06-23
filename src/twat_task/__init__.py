@@ -15,8 +15,6 @@ Example:
     >>> print(vt.text_transcript)  # Generates transcript
 """
 
-from importlib import metadata
-
 from twat_task.__version__ import version as __version__
 from twat_task.task import (
     VideoTranscript,
