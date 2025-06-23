@@ -1,13 +1,19 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.3.4
+    rev: v0.4.4 # Updated Ruff version
     hooks:
       - id: ruff
-        args: [--fix]
+        args: [--fix, --exit-non-zero-on-fix]
       - id: ruff-format
         args: [--respect-gitignore]
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.10.0 # Choose a recent Mypy version
+    hooks:
+      - id: mypy
+        additional_dependencies: ["pydantic>=2.0.0", "prefect>=3.1.0", "types-requests"] # Add types for packages used
+        args: [--config-file=pyproject.toml]
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0 # Updated pre-commit-hooks version
     hooks:
       - id: end-of-file-fixer
       - id: check-yaml

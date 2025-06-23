@@ -90,7 +90,9 @@ dependencies = [
 test = "pytest {args:tests}"
 test-cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=src/twat_task --cov=tests {args:tests}"
 type-check = "mypy src/twat_task tests"
-lint = ["ruff check src/twat_task tests", "ruff format src/twat_task tests"]
+lint = "ruff check src/twat_task tests"
+format = ["ruff format src/twat_task tests", "ruff check --fix src/twat_task tests"]
+check-all = ["lint", "type-check", "test-cov"]
 
 # Python version matrix for testing
 [[tool.hatch.envs.all.matrix]]

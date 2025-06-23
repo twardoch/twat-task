@@ -24,7 +24,11 @@ def test_extract_audio_task_creates_output_file(tmp_path: Path, monkeypatch):
     try:
         content = json.loads(audio_file.read_text())
         assert "duration" in content
-        assert "codec" in content
+        assert content["codec"] == "aac"  # Check specific mock value
+        assert content["channels"] == 2  # Check specific mock value
+        assert "bitrate" in content
+        assert "sample_rate" in content
+        assert content["sample_rate"] == 44100 # Check specific mock value
     except json.JSONDecodeError:
         pytest.fail("Output file is not valid JSON.")
 
@@ -64,9 +68,14 @@ def test_generate_transcript_task_simulates_processing(tmp_path: Path):
     mock_metadata = {"duration": 180, "codec": "aac"} # Duration affects loop count
     audio_file.write_text(json.dumps(mock_metadata))
 
+    mock_metadata = {"duration": 180, "codec": "aac"} # Duration affects loop count
+    audio_file.write_text(json.dumps(mock_metadata))
+
     with patch("time.sleep") as mock_sleep:
         generate_transcript_task.fn(audio_path=audio_file)
-        # Expect sleeps: 1 initial, N in loop
-        # Original: time.sleep(1.5) and N * time.sleep(0.3) where N = duration // 30
-        # For duration 180, N = 6. So, 1 + 6 = 7 calls.
-        assert mock_sleep.call_count >= 2 # Check if sleep was called at least for the main parts
+        # Original: time.sleep(1.5) -> 1 call
+        # Loop: N * time.sleep(0.3) where N = duration // 30
+        # For duration 180, N = 180 // 30 = 6 calls.
+        # Total expected calls = 1 (initial) + 6 (loop) = 7 calls.
+        expected_sleep_calls = 1 + (mock_metadata["duration"] // 30)
+        assert mock_sleep.call_count == expected_sleep_calls
