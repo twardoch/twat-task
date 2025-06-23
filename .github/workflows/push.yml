@@ -38,6 +38,24 @@ jobs:
           version: "latest"
           args: "format --check --respect-gitignore"
 
+      - name: Set up Python for Mypy
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12" # Or matrix.python-version if run per version
+
+      - name: Install Mypy and dependencies
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          python-version: "3.12" # Match above
+          enable-cache: true # Cache Mypy deps
+      - run: |
+          uv pip install --system mypy pydantic prefect # Install mypy and project's typed dependencies
+          # Consider adding twat if it has type hints and is installable, or types-twat
+
+      - name: Run Mypy
+        run: uv run mypy --config-file pyproject.toml src/twat_task tests/
+
   test:
     name: Run Tests
     needs: quality
