@@ -1,15 +1,14 @@
 #!/usr/bin/env -S uv run -s
 # /// script
 # dependencies = [
-#   "ruff>=0.4.0", # Updated ruff version
+#   "ruff>=0.9.6",
 #   "pytest>=8.3.4",
-#   "mypy>=1.10.0", # Updated mypy version
+#   "mypy>=1.15.0",
 # ]
 # ///
 # this_file: cleanup.py
 
-"""
-Cleanup tool for managing repository tasks and maintaining code quality.
+"""Cleanup tool for managing repository tasks and maintaining code quality.
 
 This script provides a comprehensive set of commands for repository maintenance:
 
@@ -41,7 +40,7 @@ Workflow Example:
 3. Commit changes: `cleanup.py update`
 4. Push to remote: `cleanup.py push`
 
-The script maintains a CLEANUP.txt file that records all operations with timestamps.
+The script maintains a llms.txt file that records all operations with timestamps.
 It also includes content from README.md at the start and TODO.md at the end of logs
 for context.
 
@@ -54,7 +53,7 @@ Required Files:
 import subprocess
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 from typing import NoReturn
 from shutil import which
@@ -69,13 +68,11 @@ IGNORE_PATTERNS = [
     "build",
     "*.egg-info",
 ]
-REQUIRED_FILES = ["LOG.md", "README.md", "TODO.md"]
-LOG_FILE = Path("CLEANUP.txt")
+REQUIRED_FILES = ["LOG.md", ".cursor/rules/0project.mdc", "TODO.md"]
+LOG_FILE = Path("llms.txt")
 
 # Ensure we're working from the script's directory
 os.chdir(Path(__file__).parent)
-
-MIN_ARGS = 2
 
 
 def new() -> None:
@@ -84,14 +81,13 @@ def new() -> None:
         LOG_FILE.unlink()
 
 
-def read_and_log_file_content(file_path: Path, header: str) -> None:
-    """Reads a file and logs its content with a header."""
-    if file_path.exists():
-        log_message(f"\n=== {header} ===")
-        content = file_path.read_text()
+def prefix() -> None:
+    """Write README.md content to log file."""
+    readme = Path(".cursor/rules/0project.mdc")
+    if readme.exists():
+        log_message("\n=== PROJECT STATEMENT ===")
+        content = readme.read_text()
         log_message(content)
-    else:
-        log_message(f"Warning: {file_path} not found, skipping logging its content.")
 
 
 def suffix() -> None:
@@ -105,26 +101,21 @@ def suffix() -> None:
 
 def log_message(message: str) -> None:
     """Log a message to file and console with timestamp."""
-    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S")
     log_line = f"{timestamp} - {message}\n"
     with LOG_FILE.open("a") as f:
         f.write(log_line)
 
 
-def run_command(cmd: list[str], *, check: bool = True) -> subprocess.CompletedProcess:
-    """
-    Run a shell command and return the result.
-    The `cmd` parameter is constructed internally and should be safe.
-    """
-    # S603: `subprocess` call with `shell=False` and internally constructed `cmd` is a mitigated risk.
-    # For higher security, `cmd[0]` could be validated against an allowlist of commands.
+def run_command(cmd: list[str], check: bool = True) -> subprocess.CompletedProcess:
+    """Run a shell command and return the result."""
     try:
         result = subprocess.run(
             cmd,
             check=check,
             capture_output=True,
             text=True,
-            shell=False,
+            shell=False,  # Explicitly set shell=False for security
         )
         if result.stdout:
             log_message(result.stdout)
@@ -168,7 +159,7 @@ class Cleanup:
         """Generate and display tree structure of the project."""
         if not check_command_exists("tree"):
             log_message("Warning: 'tree' command not found. Skipping tree generation.")
-            return None
+            return
 
         try:
             # Create/overwrite the file with YAML frontmatter
@@ -190,7 +181,7 @@ class Cleanup:
 
         except Exception as e:
             log_message(f"Failed to generate tree: {e}")
-        return None
+        return
 
     def _git_status(self) -> bool:
         """Check git status and return True if there are changes."""
@@ -242,8 +233,6 @@ class Cleanup:
                     "--unsafe-fixes",
                     "src",
                     "tests",
-                    "examples",
-                    "cleanup.py",
                 ],
                 check=False,
             )
@@ -256,18 +245,13 @@ class Cleanup:
                     "--respect-gitignore",
                     "src",
                     "tests",
-                    "examples",
-                    "cleanup.py",
                 ],
                 check=False,
             )
 
             # Run type checks
             log_message(">>>Running type checks...")
-            run_command(
-                ["python", "-m", "mypy", "src", "tests", "examples", "cleanup.py"],
-                check=False,
-            )
+            run_command(["python", "-m", "mypy", "src", "tests"], check=False)
 
             # Run tests
             log_message(">>> Running tests...")
@@ -279,9 +263,7 @@ class Cleanup:
 
     def status(self) -> None:
         """Show current repository status: tree structure, git status, and run checks."""
-        read_and_log_file_content(
-            Path("README.md"), "README.md"
-        )  # Log README.md content at start
+        prefix()  # Add README.md content at start
         self._print_header("Current Status")
 
         # Check required files
@@ -342,6 +324,42 @@ class Cleanup:
             log_message(f"Failed to push changes: {e}")
 
 
+def repomix(
+    *,
+    compress: bool = True,
+    remove_empty_lines: bool = True,
+    ignore_patterns: str = ".specstory/**/*.md,.venv/**,_private/**,llms.txt,**/*.json,*.lock",
+    output_file: str = "REPO_CONTENT.txt",
+) -> None:
+    """Combine repository files into a single text file.
+
+    Args:
+        compress: Whether to compress whitespace in output
+        remove_empty_lines: Whether to remove empty lines
+        ignore_patterns: Comma-separated glob patterns of files to ignore
+        output_file: Output file path
+
+    """
+    try:
+        # Build command
+        cmd = ["repomix"]
+        if compress:
+            cmd.append("--compress")
+        if remove_empty_lines:
+            cmd.append("--remove-empty-lines")
+        if ignore_patterns:
+            cmd.append("-i")
+            cmd.append(ignore_patterns)
+        cmd.extend(["-o", output_file])
+
+        # Run repomix
+        run_command(cmd)
+        log_message(f"Repository content mixed into {output_file}")
+
+    except Exception as e:
+        log_message(f"Failed to mix repository: {e}")
+
+
 def print_usage() -> None:
     """Print usage information."""
     log_message("Usage:")
@@ -356,7 +374,7 @@ def main() -> NoReturn:
     """Main entry point."""
     new()  # Clear log file
 
-    if len(sys.argv) < MIN_ARGS:
+    if len(sys.argv) < 2:
         print_usage()
         sys.exit(1)
 
@@ -378,11 +396,8 @@ def main() -> NoReturn:
             print_usage()
     except Exception as e:
         log_message(f"Error: {e}")
-    # The repomix call was removed as it's expected to be run via npx externally.
-    # If REPO_CONTENT.txt generation is still desired as part of this script,
-    # the npx command should be called here using run_command.
-    # For now, assuming it's handled externally or no longer needed from this script.
-    sys.stdout.write(Path("CLEANUP.txt").read_text())
+    repomix()
+    sys.stdout.write(Path("llms.txt").read_text())
     sys.exit(0)  # Ensure we exit with a status code
 
 
