@@ -1,101 +1,188 @@
-2025-03-05 12:14:24 - 
-=== PROJECT STATEMENT ===
-2025-03-05 12:14:24 - ---
-description: About this project
-globs:
----
-# About this project
+2025-06-25 11:08:35 -
+=== README.md ===
+2025-06-25 11:08:35 - # twat-task
 
-`twat-fs` is a file system utility library focused on robust and extensible file upload capabilities with multiple provider support. It provides:
+Video processing pipeline utilities using Prefect for workflow management. This package provides a set of tasks and flows for processing video files, including audio extraction and transcription.
 
-- Multi-provider upload system with smart fallback (catbox.moe default, plus Dropbox, S3, etc.)
-- Automatic retry for temporary failures, fallback for permanent ones
-- URL validation and clean developer experience with type hints
-- Simple CLI: `python -m twat_fs upload_file path/to/file.txt`
-- Easy installation: `uv pip install twat-fs` (basic) or `uv pip install 'twat-fs[all,dev]'` (all features)
+**Note:** The current version uses mock implementations for video/audio processing tasks, simulating delays and creating placeholder files. It serves as a structural foundation for integrating actual processing logic.
 
-## Development Notes
-- Uses `uv` for Python package management
-- Quality tools: ruff, mypy, pytest
-- Clear provider protocol for adding new storage backends
-- Strong typing and runtime checks throughout
+## Features
 
-2025-03-05 12:14:24 - 
+- High-level interface (`VideoTranscript`) for video processing.
+- Prefect-based tasks for:
+  - Audio extraction from video files (mocked).
+  - Speech-to-text transcription (mocked).
+- Prefect flow (`process_video_flow`) to orchestrate the tasks.
+- Workflow management capabilities via Prefect (retries, logging, caching).
+- Pydantic models for data validation.
+- Modern Python features with type hints.
+- Managed with Hatch (testing, linting, building).
+
+## Installation
+
+Currently, this package is not published on PyPI. To install it for development or local use, clone the repository and install it in editable mode:
+
+```bash
+git clone https://github.com/twardoch/twat-task.git
+cd twat-task
+pip install -e .
+```
+
+This will install the package and its dependencies.
+
+## Usage
+
+Here's a basic example of how to use `twat-task`:
+
+```python
+from pathlib import Path
+from twat_task import VideoTranscript
+
+# Create a dummy video file for the example to run
+# In a real scenario, this would be an actual video file.
+dummy_video_path = Path("example_video.mp4")
+dummy_video_path.touch()
+
+# Initialize VideoTranscript with the path to your video file
+vt = VideoTranscript(video_path=dummy_video_path)
+
+# Accessing audio_path will trigger the (mock) audio extraction
+# The extracted audio path will be like 'example_video.mp3'
+print(f"Mock audio path: {vt.audio_path}")
+
+# Accessing text_transcript will trigger (mock) transcription
+# This will print a randomly generated string of text
+print(f"Mock transcript: {vt.text_transcript}")
+
+# Clean up the dummy files (optional)
+vt.audio_path.unlink(missing_ok=True)
+dummy_video_path.unlink(missing_ok=True)
+```
+
+When you access `vt.audio_path` or `vt.text_transcript` for the first time, the underlying Prefect flow `process_video_flow` will run, executing the (currently mock) audio extraction and transcription tasks. The results are cached, so subsequent access will return the stored values without re-running the tasks.
+
+## Development
+
+This project uses [Hatch](https://hatch.pypa.io/) for environment and project management.
+
+1.  **Setup:**
+    *   Ensure you have Hatch installed (`pip install hatch`).
+    *   The dependencies, including development tools, are managed by `pyproject.toml`.
+
+2.  **Running Tests:**
+    ```bash
+    hatch run test
+    ```
+    To run tests with coverage:
+    ```bash
+    hatch run test-cov
+    ```
+
+3.  **Linting and Type Checking:**
+    ```bash
+    hatch run lint:all
+    ```
+    This runs `ruff` for formatting/linting and `mypy` for type checking.
+    To auto-format:
+    ```bash
+    hatch run lint:fmt
+    ```
+
+4.  **Building the Package:**
+    ```bash
+    hatch build
+    ```
+    This will create wheel and sdist packages in the `dist/` directory.
+
+## Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request.
+
+## License
+
+MIT License
+
+2025-06-25 11:08:35 -
 === Current Status ===
-2025-03-05 12:14:24 - Error: TODO.md is missing
-2025-03-05 12:14:24 - [ 768]  .
-├── [  64]  .benchmarks
-├── [  96]  .cursor
-│   └── [ 224]  rules
-│       ├── [ 821]  0project.mdc
+2025-06-25 11:08:35 - [4.0K]  .
+├── [4.0K]  .cursor
+│   └── [4.0K]  rules
 │       ├── [ 516]  cleanup.mdc
-│       ├── [1.0K]  filetree.mdc
+│       ├── [1.1K]  filetree.mdc
 │       └── [2.0K]  quality.mdc
-├── [  96]  .github
-│   └── [ 128]  workflows
-│       ├── [2.7K]  push.yml
+├── [4.0K]  .github
+│   └── [4.0K]  workflows
+│       ├── [3.4K]  push.yml
 │       └── [1.4K]  release.yml
 ├── [3.5K]  .gitignore
-├── [ 500]  .pre-commit-config.yaml
-├── [ 987]  CLEANUP.txt
+├── [ 875]  .pre-commit-config.yaml
+├── [ 552]  CHANGELOG.md
+├── [3.3K]  CLEANUP.txt
 ├── [1.0K]  LICENSE
 ├── [2.1K]  LOG.md
-├── [ 716]  README.md
+├── [3.2K]  PLAN.md
+├── [3.2K]  README.md
 ├── [ 36K]  REPO_CONTENT.txt
+├── [1.4K]  TODO.md
 ├── [   7]  VERSION.txt
-├── [ 13K]  cleanup.py
-├── [ 160]  dist
-├── [7.5K]  pyproject.toml
-├── [ 160]  src
-│   ├── [ 408]  testprefect.py
-│   └── [ 224]  twat_task
-│       ├── [ 940]  __init__.py
-│       ├── [5.0K]  __main__.py
-│       └── [3.8K]  task.py
-└── [ 128]  tests
-    └── [ 151]  test_twat_task.py
+├── [ 12K]  cleanup.py
+├── [4.0K]  examples
+│   └── [ 408]  testprefect_example.py
+├── [110K]  llms.txt
+├── [8.1K]  pyproject.toml
+├── [4.0K]  src
+│   └── [4.0K]  twat_task
+│       ├── [ 908]  __init__.py
+│       └── [5.6K]  task.py
+└── [4.0K]  tests
+    ├── [3.0K]  test_flows.py
+    ├── [ 151]  test_package.py
+    ├── [3.3K]  test_tasks.py
+    └── [4.4K]  test_video_transcript.py
 
-10 directories, 21 files
+9 directories, 26 files
 
-2025-03-05 12:14:24 - 
+2025-06-25 11:08:35 -
 Project structure:
-2025-03-05 12:14:24 - [ 768]  .
-├── [  64]  .benchmarks
-├── [  96]  .cursor
-│   └── [ 224]  rules
-│       ├── [ 821]  0project.mdc
+2025-06-25 11:08:35 - [4.0K]  .
+├── [4.0K]  .cursor
+│   └── [4.0K]  rules
 │       ├── [ 516]  cleanup.mdc
-│       ├── [1.0K]  filetree.mdc
+│       ├── [1.1K]  filetree.mdc
 │       └── [2.0K]  quality.mdc
-├── [  96]  .github
-│   └── [ 128]  workflows
-│       ├── [2.7K]  push.yml
+├── [4.0K]  .github
+│   └── [4.0K]  workflows
+│       ├── [3.4K]  push.yml
 │       └── [1.4K]  release.yml
 ├── [3.5K]  .gitignore
-├── [ 500]  .pre-commit-config.yaml
-├── [ 987]  CLEANUP.txt
+├── [ 875]  .pre-commit-config.yaml
+├── [ 552]  CHANGELOG.md
+├── [3.3K]  CLEANUP.txt
 ├── [1.0K]  LICENSE
 ├── [2.1K]  LOG.md
-├── [ 716]  README.md
+├── [3.2K]  PLAN.md
+├── [3.2K]  README.md
 ├── [ 36K]  REPO_CONTENT.txt
+├── [1.4K]  TODO.md
 ├── [   7]  VERSION.txt
-├── [ 13K]  cleanup.py
-├── [ 160]  dist
-├── [7.5K]  pyproject.toml
-├── [ 160]  src
-│   ├── [ 408]  testprefect.py
-│   └── [ 224]  twat_task
-│       ├── [ 940]  __init__.py
-│       ├── [5.0K]  __main__.py
-│       └── [3.8K]  task.py
-└── [ 128]  tests
-    └── [ 151]  test_twat_task.py
+├── [ 12K]  cleanup.py
+├── [4.0K]  examples
+│   └── [ 408]  testprefect_example.py
+├── [110K]  llms.txt
+├── [8.1K]  pyproject.toml
+├── [4.0K]  src
+│   └── [4.0K]  twat_task
+│       ├── [ 908]  __init__.py
+│       └── [5.6K]  task.py
+└── [4.0K]  tests
+    ├── [3.0K]  test_flows.py
+    ├── [ 151]  test_package.py
+    ├── [3.3K]  test_tasks.py
+    └── [4.4K]  test_video_transcript.py
 
-10 directories, 21 files
+9 directories, 26 files
 
-2025-03-05 12:14:24 - On branch main
-Your branch is up to date with 'origin/main'.
-
+2025-06-25 11:08:35 - HEAD detached from e7bae0b
 Changes not staged for commit:
   (use "git add <file>..." to update what will be committed)
   (use "git restore <file>..." to discard changes in working directory)
@@ -104,9 +191,7 @@ Changes not staged for commit:
 
 no changes added to commit (use "git add" and/or "git commit -a")
 
-2025-03-05 12:14:24 - On branch main
-Your branch is up to date with 'origin/main'.
-
+2025-06-25 11:08:35 - HEAD detached from e7bae0b
 Changes not staged for commit:
   (use "git add <file>..." to update what will be committed)
   (use "git restore <file>..." to discard changes in working directory)
@@ -115,17 +200,53 @@ Changes not staged for commit:
 
 no changes added to commit (use "git add" and/or "git commit -a")
 
-2025-03-05 12:14:24 - 
+2025-06-25 11:08:35 -
 === Environment Status ===
-2025-03-05 12:14:24 - Setting up virtual environment
-2025-03-05 12:14:28 - Virtual environment created and activated
-2025-03-05 12:14:28 - Installing package with all extras
-2025-03-05 12:14:28 - Setting up virtual environment
-2025-03-05 12:14:28 - Virtual environment created and activated
-2025-03-05 12:14:31 - Package installed successfully
-2025-03-05 12:14:31 - Running code quality checks
-2025-03-05 12:14:31 - >>> Running code fixes...
-2025-03-05 12:14:31 - src/testprefect.py:10:38: FBT001 Boolean-typed positional argument in function definition
+2025-06-25 11:08:35 - Setting up virtual environment
+2025-06-25 11:08:36 - Virtual environment created and activated
+2025-06-25 11:08:36 - Installing package with all extras
+2025-06-25 11:08:36 - Setting up virtual environment
+2025-06-25 11:08:36 - Virtual environment created and activated
+2025-06-25 11:08:45 - Package installed successfully
+2025-06-25 11:08:45 - Running code quality checks
+2025-06-25 11:08:45 - >>> Running code fixes...
+2025-06-25 11:08:45 - cleanup.py:112:33: FBT001 Boolean-typed positional argument in function definition
+    |
+112 | def run_command(cmd: list[str], check: bool = True) -> subprocess.CompletedProcess:
+    |                                 ^^^^^ FBT001
+113 |     """Run a shell command and return the result."""
+114 |     try:
+    |
+
+cleanup.py:112:33: FBT002 Boolean default positional argument in function definition
+    |
+112 | def run_command(cmd: list[str], check: bool = True) -> subprocess.CompletedProcess:
+    |                                 ^^^^^ FBT002
+113 |     """Run a shell command and return the result."""
+114 |     try:
+    |
+
+cleanup.py:115:18: S603 `subprocess` call: check for execution of untrusted input
+    |
+113 |     """Run a shell command and return the result."""
+114 |     try:
+115 |         result = subprocess.run(
+    |                  ^^^^^^^^^^^^^^ S603
+116 |             cmd,
+117 |             check=check,
+    |
+
+cleanup.py:347:24: PLR2004 Magic value used in comparison, consider replacing `2` with a constant variable
+    |
+345 |     new()  # Clear log file
+346 |
+347 |     if len(sys.argv) < 2:
+    |                        ^ PLR2004
+348 |         print_usage()
+349 |         sys.exit(1)
+    |
+
+examples/testprefect_example.py:10:38: FBT001 Boolean-typed positional argument in function definition
    |
  9 | @flow(log_prints=True)
 10 | def hello_world(name: str = "world", goodbye: bool = False):
@@ -134,7 +255,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
 12 |         pass
    |
 
-src/testprefect.py:10:38: FBT002 Boolean default positional argument in function definition
+examples/testprefect_example.py:10:38: FBT002 Boolean default positional argument in function definition
    |
  9 | @flow(log_prints=True)
 10 | def hello_world(name: str = "world", goodbye: bool = False):
@@ -143,161 +264,459 @@ src/testprefect.py:10:38: FBT002 Boolean default positional argument in function
 12 |         pass
    |
 
-src/twat_task/__init__.py:18:23: F401 `importlib.metadata` imported but unused
+src/twat_task/task.py:41:5: PLC0415 `import` should be at the top-level of a file
    |
-16 | """
-17 |
-18 | from importlib import metadata
-   |                       ^^^^^^^^ F401
-19 |
-20 | from twat_task.__version__ import version as __version__
+40 |     # Simulate fetching video metadata as JSON
+41 |     import json
+   |     ^^^^^^^^^^^ PLC0415
+42 |     import time
+43 |     from random import randint
    |
-   = help: Remove unused import: `importlib.metadata`
 
-src/twat_task/__main__.py:52:21: S311 Standard pseudo-random generators are not suitable for cryptographic purposes
+src/twat_task/task.py:42:5: PLC0415 `import` should be at the top-level of a file
    |
-51 |     metadata = {
-52 |         "duration": randint(60, 3600),
+40 |     # Simulate fetching video metadata as JSON
+41 |     import json
+42 |     import time
+   |     ^^^^^^^^^^^ PLC0415
+43 |     from random import randint
+   |
+
+src/twat_task/task.py:43:5: PLC0415 `import` should be at the top-level of a file
+   |
+41 |     import json
+42 |     import time
+43 |     from random import randint
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^ PLC0415
+44 |
+45 |     time.sleep(2)  # Simulate API call
+   |
+
+src/twat_task/task.py:48:21: S311 Standard pseudo-random generators are not suitable for cryptographic purposes
+   |
+47 |     metadata = {
+48 |         "duration": randint(60, 3600),
    |                     ^^^^^^^^^^^^^^^^^ S311
-53 |         "codec": "aac",
-54 |         "bitrate": f"{randint(128, 320)}kbps",
+49 |         "codec": "aac",
+50 |         "bitrate": f"{randint(128, 320)}kbps",
    |
 
-src/twat_task/__main__.py:54:23: S311 Standard pseudo-random generators are not suitable for cryptographic purposes
+src/twat_task/task.py:50:23: S311 Standard pseudo-random generators are not suitable for cryptographic purposes
    |
-52 |         "duration": randint(60, 3600),
-53 |         "codec": "aac",
-54 |         "bitrate": f"{randint(128, 320)}kbps",
+48 |         "duration": randint(60, 3600),
+49 |         "codec": "aac",
+50 |         "bitrate": f"{randint(128, 320)}kbps",
    |                       ^^^^^^^^^^^^^^^^^ S311
-55 |         "channels": 2,
-56 |         "sample_rate": 44100,
+51 |         "channels": 2,
+52 |         "sample_rate": 44100,
    |
 
-src/twat_task/__main__.py:119:31: S311 Standard pseudo-random generators are not suitable for cryptographic purposes
+src/twat_task/task.py:84:5: PLC0415 `import` should be at the top-level of a file
+   |
+82 |     """
+83 |
+84 |     import json
+   |     ^^^^^^^^^^^ PLC0415
+85 |     import time
+86 |     from random import choice, randint
+   |
+
+src/twat_task/task.py:85:5: PLC0415 `import` should be at the top-level of a file
+   |
+84 |     import json
+85 |     import time
+   |     ^^^^^^^^^^^ PLC0415
+86 |     from random import choice, randint
+   |
+
+src/twat_task/task.py:86:5: PLC0415 `import` should be at the top-level of a file
+   |
+84 |     import json
+85 |     import time
+86 |     from random import choice, randint
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ PLC0415
+87 |
+88 |     # Simulate loading audio metadata
+   |
+
+src/twat_task/task.py:118:31: S311 Standard pseudo-random generators are not suitable for cryptographic purposes
     |
-117 |         time.sleep(0.3)  # Simulate API call and processing
-118 |         # Generate some random text
-119 |         chunk_text = " ".join(choice(words) for _ in range(randint(5, 15)))
+116 |         time.sleep(0.3)  # Simulate API call and processing
+117 |         # Generate some random text
+118 |         chunk_text = " ".join(choice(words) for _ in range(randint(5, 15)))
     |                               ^^^^^^^^^^^^^ S311
-120 |         transcript_parts.append(chunk_text)
+119 |         transcript_parts.append(chunk_text)
     |
 
-src/twat_task/__main__.py:119:60: S311 Standard pseudo-random generators are not suitable for cryptographic purposes
+src/twat_task/task.py:118:60: S311 Standard pseudo-random generators are not suitable for cryptographic purposes
     |
-117 |         time.sleep(0.3)  # Simulate API call and processing
-118 |         # Generate some random text
-119 |         chunk_text = " ".join(choice(words) for _ in range(randint(5, 15)))
+116 |         time.sleep(0.3)  # Simulate API call and processing
+117 |         # Generate some random text
+118 |         chunk_text = " ".join(choice(words) for _ in range(randint(5, 15)))
     |                                                            ^^^^^^^^^^^^^^ S311
-120 |         transcript_parts.append(chunk_text)
+119 |         transcript_parts.append(chunk_text)
     |
 
-src/twat_task/task.py:33:21: S311 Standard pseudo-random generators are not suitable for cryptographic purposes
+tests/test_package.py:6:5: PLC0415 `import` should be at the top-level of a file
+  |
+4 | def test_version():
+5 |     """Verify package exposes version."""
+6 |     import twat_task
+  |     ^^^^^^^^^^^^^^^^ PLC0415
+7 |
+8 |     assert twat_task.__version__
+  |
+
+tests/test_tasks.py:13:46: ARG005 Unused lambda argument: `x`
    |
-32 |     metadata = {
-33 |         "duration": randint(60, 3600),
-   |                     ^^^^^^^^^^^^^^^^^ S311
-34 |         "codec": "aac",
-35 |         "bitrate": f"{randint(128, 320)}kbps",
+11 | def test_extract_audio_task_creates_output_file(tmp_path: Path, monkeypatch):
+12 |     """Test that extract_audio_task creates an output file with JSON content."""
+13 |     monkeypatch.setattr("time.sleep", lambda x: None)  # Disable sleep
+   |                                              ^ ARG005
+14 |
+15 |     video_file = tmp_path / "test_video.mp4"
    |
 
-src/twat_task/task.py:35:23: S311 Standard pseudo-random generators are not suitable for cryptographic purposes
+tests/test_tasks.py:53:46: ARG005 Unused lambda argument: `x`
    |
-33 |         "duration": randint(60, 3600),
-34 |         "codec": "aac",
-35 |         "bitrate": f"{randint(128, 320)}kbps",
-   |                       ^^^^^^^^^^^^^^^^^ S311
-36 |         "channels": 2,
-37 |         "sample_rate": 44100,
-   |
-
-src/twat_task/task.py:93:31: S311 Standard pseudo-random generators are not suitable for cryptographic purposes
-   |
-91 |         time.sleep(0.3)  # Simulate API call and processing
-92 |         # Generate some random text
-93 |         chunk_text = " ".join(choice(words) for _ in range(randint(5, 15)))
-   |                               ^^^^^^^^^^^^^ S311
-94 |         transcript_parts.append(chunk_text)
+51 | def test_generate_transcript_task_returns_string(tmp_path: Path, monkeypatch):
+52 |     """Test that generate_transcript_task returns a string."""
+53 |     monkeypatch.setattr("time.sleep", lambda x: None)  # Disable sleep
+   |                                              ^ ARG005
+54 |
+55 |     audio_file = tmp_path / "test_audio.mp3"
    |
 
-src/twat_task/task.py:93:60: S311 Standard pseudo-random generators are not suitable for cryptographic purposes
-   |
-91 |         time.sleep(0.3)  # Simulate API call and processing
-92 |         # Generate some random text
-93 |         chunk_text = " ".join(choice(words) for _ in range(randint(5, 15)))
-   |                                                            ^^^^^^^^^^^^^^ S311
-94 |         transcript_parts.append(chunk_text)
-   |
+Found 22 errors (3 fixed, 19 remaining).
 
-Found 11 errors.
+2025-06-25 11:08:45 - 4 files reformatted, 4 files left unchanged
 
-2025-03-05 12:14:31 - 5 files left unchanged
+2025-06-25 11:08:45 - >>>Running type checks...
+2025-06-25 11:09:48 - examples/testprefect_example.py:10: error: Function is missing a return type annotation  [no-untyped-def]
+src/twat_task/task.py:55: error: Unsupported operand types for // ("object" and "int")  [operator]
+src/twat_task/task.py:170: error: Decorators on top of @property are not supported  [prop-decorator]
+src/twat_task/task.py:183: error: Decorators on top of @property are not supported  [prop-decorator]
+tests/test_video_transcript.py:13: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_video_transcript.py:25: error: Function is missing a return type annotation  [no-untyped-def]
+tests/test_video_transcript.py:34: error: Function is missing a return type annotation  [no-untyped-def]
+tests/test_video_transcript.py:34: note: Use "-> None" if function does not return a value
+tests/test_video_transcript.py:40: error: Function is missing a return type annotation  [no-untyped-def]
+tests/test_video_transcript.py:66: error: Function is missing a return type annotation  [no-untyped-def]
+tests/test_video_transcript.py:95: error: Function is missing a return type annotation  [no-untyped-def]
+tests/test_tasks.py:11: error: Function is missing a return type annotation  [no-untyped-def]
+tests/test_tasks.py:11: error: Function is missing a type annotation for one or more arguments  [no-untyped-def]
+tests/test_tasks.py:36: error: Function is missing a return type annotation  [no-untyped-def]
+tests/test_tasks.py:54: error: Function is missing a return type annotation  [no-untyped-def]
+tests/test_tasks.py:54: error: Function is missing a type annotation for one or more arguments  [no-untyped-def]
+tests/test_tasks.py:68: error: Function is missing a return type annotation  [no-untyped-def]
+tests/test_tasks.py:83: error: Unsupported operand types for // ("object" and "int")  [operator]
+tests/test_flows.py:11: error: Function is missing a type annotation  [no-untyped-def]
+tests/test_flows.py:21: error: Function is missing a return type annotation  [no-untyped-def]
+tests/test_flows.py:21: error: Function is missing a type annotation for one or more arguments  [no-untyped-def]
+tests/test_flows.py:41: error: Function is missing a return type annotation  [no-untyped-def]
+tests/test_flows.py:41: error: Function is missing a type annotation for one or more arguments  [no-untyped-def]
+tests/test_flows.py:62: error: Function is missing a return type annotation  [no-untyped-def]
+tests/test_flows.py:62: error: Function is missing a type annotation for one or more arguments  [no-untyped-def]
+tests/test_package.py:4: error: Function is missing a return type annotation  [no-untyped-def]
+tests/test_package.py:4: note: Use "-> None" if function does not return a value
+Found 25 errors in 6 files (checked 9 source files)
 
-2025-03-05 12:14:31 - >>>Running type checks...
-2025-03-05 12:15:39 - src/testprefect.py:10: error: Function is missing a return type annotation  [no-untyped-def]
-src/twat_task/task.py:40: error: Unsupported operand types for // ("object" and "int")  [operator]
-src/twat_task/task.py:134: error: Decorators on top of @property are not supported  [prop-decorator]
-src/twat_task/task.py:141: error: Decorators on top of @property are not supported  [prop-decorator]
-src/twat_task/__main__.py:59: error: Unsupported operand types for // ("object" and "int")  [operator]
-src/twat_task/__main__.py:166: error: Decorators on top of @property are not supported  [prop-decorator]
-src/twat_task/__main__.py:174: error: Decorators on top of @property are not supported  [prop-decorator]
-tests/test_twat_task.py:4: error: Function is missing a return type annotation  [no-untyped-def]
-tests/test_twat_task.py:4: note: Use "-> None" if function does not return a value
-Found 8 errors in 4 files (checked 6 source files)
-
-2025-03-05 12:15:39 - >>> Running tests...
-2025-03-05 12:15:47 - ============================= test session starts ==============================
-platform darwin -- Python 3.12.8, pytest-8.3.5, pluggy-1.5.0 -- /Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_task/.venv/bin/python
+2025-06-25 11:09:48 - >>> Running tests...
+2025-06-25 11:09:57 - ============================= test session starts ==============================
+platform linux -- Python 3.12.11, pytest-8.4.1, pluggy-1.6.0 -- /app/.venv/bin/python
 cachedir: .pytest_cache
 benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
-rootdir: /Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_task
+rootdir: /app
 configfile: pyproject.toml
-plugins: cov-6.0.0, time-machine-2.16.0, anyio-4.8.0, benchmark-5.1.0, xdist-3.6.1
-collecting ... collected 1 item
+plugins: xdist-3.7.0, benchmark-5.1.0, anyio-4.9.0, cov-6.2.1
+collecting ... collected 13 items
 
-tests/test_twat_task.py::test_version PASSED                             [100%]
+tests/test_flows.py::test_process_video_flow_new_video FAILED            [  7%]
+tests/test_flows.py::test_process_video_flow_existing_audio FAILED       [ 15%]
+tests/test_flows.py::test_process_video_flow_return_values PASSED        [ 23%]
+tests/test_package.py::test_version PASSED                               [ 30%]
+tests/test_tasks.py::test_extract_audio_task_creates_output_file PASSED  [ 38%]
+tests/test_tasks.py::test_extract_audio_task_simulates_processing PASSED [ 46%]
+tests/test_tasks.py::test_generate_transcript_task_returns_string PASSED [ 53%]
+tests/test_tasks.py::test_generate_transcript_task_simulates_processing PASSED [ 61%]
+tests/test_video_transcript.py::test_video_transcript_instantiation PASSED [ 69%]
+tests/test_video_transcript.py::test_video_transcript_invalid_path_type FAILED [ 76%]
+tests/test_video_transcript.py::test_video_transcript_audio_path_lazy_evaluation FAILED [ 84%]
+tests/test_video_transcript.py::test_video_transcript_text_transcript_lazy_evaluation FAILED [ 92%]
+tests/test_video_transcript.py::test_video_transcript_access_order_calls_flow_once FAILED [100%]
 
-============================== 1 passed in 4.91s ===============================
+=================================== FAILURES ===================================
+______________________ test_process_video_flow_new_video _______________________
 
-2025-03-05 12:15:47 - All checks completed
-2025-03-05 12:15:48 - 
-📦 Repomix v0.2.29
+tmp_path = PosixPath('/tmp/pytest-of-swebot/pytest-0/test_process_video_flow_new_vi0')
+mock_tasks = (<MagicMock id='140492596339888'>, <MagicMock id='140492601111664'>)
 
-No custom config found at repomix.config.json or global config at /Users/adam/.config/repomix/repomix.config.json.
-You can add a config file for additional settings. Please check https://github.com/yamadashy/repomix for more information.
-⠙ Collecting files...
-[2K[1A[2K[G⠹ Collect file... (5/19) .github/workflows/push.yml
-[2K[1A[2K[G⠸ Running security check... (1/19) .cursor/rules/0project.mdc
-[2K[1A[2K[G⠼ Processing files...
-[2K[1A[2K[G⠴ Writing output file...
-[2K[1A[2K[G⠦ Calculating metrics...
-[2K[1A[2K[G⠧ Calculating metrics...
-[2K[1A[2K[G⠇ Calculating metrics...
-[2K[1A[2K[G⠏ Calculating metrics... (2/19) .cursor/rules/cleanup.mdc
-[2K[1A[2K[G✔ Packing completed successfully!
+    def test_process_video_flow_new_video(tmp_path: Path, mock_tasks):
+        """Test process_video_flow when audio needs extraction."""
+        mock_extract_audio, mock_generate_transcript = mock_tasks
+        video_file = tmp_path / "new_video.mp4"
+        video_file.touch()  # Create dummy video file
 
-📈 Top 5 Files by Character Count and Token Count:
-──────────────────────────────────────────────────
-1.  pyproject.toml (7,666 chars, 2,154 tokens)
-2.  cleanup.py (5,904 chars, 1,316 tokens)
-3.  .gitignore (3,633 chars, 1,391 tokens)
-4.  .github/workflows/push.yml (2,745 chars, 708 tokens)
-5.  LOG.md (2,197 chars, 703 tokens)
+        expected_audio_path = video_file.with_suffix(".mp3")
 
-🔎 Security Check:
-──────────────────
-✔ No suspicious files detected.
+        # Call the flow's underlying function directly
+        audio_path, transcript = process_video_flow.fn(video_path=video_file)
 
-📊 Pack Summary:
-────────────────
-  Total Files: 19 files
-  Total Chars: 36,475 chars
- Total Tokens: 9,694 tokens
-       Output: REPO_CONTENT.txt
-     Security: ✔ No suspicious files detected
+        assert audio_path == expected_audio_path
+        assert transcript == "mock transcript"
 
-🎉 All Done!
-Your repository has been successfully packed.
+        # Check that extract_audio_task was called since audio file doesn't exist
+>       mock_extract_audio.fn.assert_called_once_with(video_file, expected_audio_path)
 
-💡 Repomix is now available in your browser! Try it at https://repomix.com
+tests/test_flows.py:36:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-2025-03-05 12:15:48 - Repository content mixed into REPO_CONTENT.txt
+self = <MagicMock name='mock.fn' id='140492595748864'>
+args = (PosixPath('/tmp/pytest-of-swebot/pytest-0/test_process_video_flow_new_vi0/new_video.mp4'), PosixPath('/tmp/pytest-of-swebot/pytest-0/test_process_video_flow_new_vi0/new_video.mp3'))
+kwargs = {}, msg = "Expected 'fn' to be called once. Called 0 times."
+
+    def assert_called_once_with(self, /, *args, **kwargs):
+        """assert that the mock was called exactly once and that that call was
+        with the specified arguments."""
+        if not self.call_count == 1:
+            msg = ("Expected '%s' to be called once. Called %s times.%s"
+                   % (self._mock_name or 'mock',
+                      self.call_count,
+                      self._calls_repr()))
+>           raise AssertionError(msg)
+E           AssertionError: Expected 'fn' to be called once. Called 0 times.
+
+/home/jules/.pyenv/versions/3.12.11/lib/python3.12/unittest/mock.py:960: AssertionError
+____________________ test_process_video_flow_existing_audio ____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-swebot/pytest-0/test_process_video_flow_existi0')
+mock_tasks = (<MagicMock id='140492595197472'>, <MagicMock id='140492590172112'>)
+
+    def test_process_video_flow_existing_audio(tmp_path: Path, mock_tasks):
+        """Test process_video_flow when audio file already exists."""
+        mock_extract_audio, mock_generate_transcript = mock_tasks
+        video_file = tmp_path / "existing_video.mp4"
+        audio_file = tmp_path / "existing_video.mp3"
+
+        video_file.touch()
+        audio_file.touch()  # Create dummy audio file to simulate existence
+
+        # Call the flow's underlying function directly
+        audio_path, transcript = process_video_flow.fn(video_path=video_file)
+
+        assert audio_path == audio_file
+        assert transcript == "mock transcript"
+
+        # Check that extract_audio_task was NOT called
+        mock_extract_audio.fn.assert_not_called()
+        # Check that generate_transcript_task was called
+>       mock_generate_transcript.fn.assert_called_once_with(audio_file)
+
+tests/test_flows.py:59:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <MagicMock name='mock.fn' id='140492590497760'>
+args = (PosixPath('/tmp/pytest-of-swebot/pytest-0/test_process_video_flow_existi0/existing_video.mp3'),)
+kwargs = {}, msg = "Expected 'fn' to be called once. Called 0 times."
+
+    def assert_called_once_with(self, /, *args, **kwargs):
+        """assert that the mock was called exactly once and that that call was
+        with the specified arguments."""
+        if not self.call_count == 1:
+            msg = ("Expected '%s' to be called once. Called %s times.%s"
+                   % (self._mock_name or 'mock',
+                      self.call_count,
+                      self._calls_repr()))
+>           raise AssertionError(msg)
+E           AssertionError: Expected 'fn' to be called once. Called 0 times.
+
+/home/jules/.pyenv/versions/3.12.11/lib/python3.12/unittest/mock.py:960: AssertionError
+___________________ test_video_transcript_invalid_path_type ____________________
+
+    def test_video_transcript_invalid_path_type():
+        """Test VideoTranscript raises ValidationError for invalid video_path type."""
+>       with pytest.raises(ValidationError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'pydantic_core._pydantic_core.ValidationError'>
+
+tests/test_video_transcript.py:36: Failed
+_______________ test_video_transcript_audio_path_lazy_evaluation _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-swebot/pytest-0/test_video_transcript_audio_pa0')
+mock_process_video_flow = <MagicMock id='140492590831936'>
+
+    def test_video_transcript_audio_path_lazy_evaluation(
+        tmp_path: Path, mock_process_video_flow: MagicMock
+    ):
+        """Test audio_path is computed lazily and calls the flow."""
+        video_file = tmp_path / "test_video.mp4"
+        video_file.touch()
+
+        expected_audio_output = tmp_path / "output.mp3"
+        mock_process_video_flow.return_value = (expected_audio_output, "some transcript")
+
+        vt = VideoTranscript(video_path=video_file)
+
+        # Flow should not have been called yet
+        mock_process_video_flow.fn.assert_not_called()
+
+        # Access audio_path
+        audio_p = vt.audio_path
+        assert audio_p == expected_audio_output
+>       mock_process_video_flow.fn.assert_called_once_with(video_path=video_file)
+
+tests/test_video_transcript.py:58:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <MagicMock name='mock.fn' id='140492593869984'>, args = ()
+kwargs = {'video_path': PosixPath('/tmp/pytest-of-swebot/pytest-0/test_video_transcript_audio_pa0/test_video.mp4')}
+msg = "Expected 'fn' to be called once. Called 0 times."
+
+    def assert_called_once_with(self, /, *args, **kwargs):
+        """assert that the mock was called exactly once and that that call was
+        with the specified arguments."""
+        if not self.call_count == 1:
+            msg = ("Expected '%s' to be called once. Called %s times.%s"
+                   % (self._mock_name or 'mock',
+                      self.call_count,
+                      self._calls_repr()))
+>           raise AssertionError(msg)
+E           AssertionError: Expected 'fn' to be called once. Called 0 times.
+
+/home/jules/.pyenv/versions/3.12.11/lib/python3.12/unittest/mock.py:960: AssertionError
+____________ test_video_transcript_text_transcript_lazy_evaluation _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-swebot/pytest-0/test_video_transcript_text_tra0')
+mock_process_video_flow = <MagicMock id='140492590909584'>
+
+    def test_video_transcript_text_transcript_lazy_evaluation(
+        tmp_path: Path, mock_process_video_flow: MagicMock
+    ):
+        """Test text_transcript is computed lazily and calls the flow."""
+        video_file = tmp_path / "test_video.mp4"
+        video_file.touch()
+
+        expected_transcript_output = "this is the expected transcript"
+        mock_process_video_flow.return_value = (
+            tmp_path / "audio.mp3",
+            expected_transcript_output,
+        )
+
+        vt = VideoTranscript(video_path=video_file)
+
+        # Flow should not have been called yet
+        mock_process_video_flow.fn.assert_not_called()
+
+        # Access text_transcript
+        transcript_t = vt.text_transcript
+        assert transcript_t == expected_transcript_output
+>       mock_process_video_flow.fn.assert_called_once_with(video_path=video_file)
+
+tests/test_video_transcript.py:87:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <MagicMock name='mock.fn' id='140492590122960'>, args = ()
+kwargs = {'video_path': PosixPath('/tmp/pytest-of-swebot/pytest-0/test_video_transcript_text_tra0/test_video.mp4')}
+msg = "Expected 'fn' to be called once. Called 0 times."
+
+    def assert_called_once_with(self, /, *args, **kwargs):
+        """assert that the mock was called exactly once and that that call was
+        with the specified arguments."""
+        if not self.call_count == 1:
+            msg = ("Expected '%s' to be called once. Called %s times.%s"
+                   % (self._mock_name or 'mock',
+                      self.call_count,
+                      self._calls_repr()))
+>           raise AssertionError(msg)
+E           AssertionError: Expected 'fn' to be called once. Called 0 times.
+
+/home/jules/.pyenv/versions/3.12.11/lib/python3.12/unittest/mock.py:960: AssertionError
+______________ test_video_transcript_access_order_calls_flow_once ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-swebot/pytest-0/test_video_transcript_access_o0')
+mock_process_video_flow = <MagicMock id='140492588981552'>
+
+    def test_video_transcript_access_order_calls_flow_once(
+        tmp_path: Path, mock_process_video_flow: MagicMock
+    ):
+        """Test that accessing audio_path then text_transcript (or vice-versa) calls flow only once."""
+        video_file = tmp_path / "test_video.mp4"
+        video_file.touch()
+
+        expected_audio = tmp_path / "audio_example.wav"
+        expected_text = "transcript from example"
+        mock_process_video_flow.return_value = (expected_audio, expected_text)
+
+        vt = VideoTranscript(video_path=video_file)
+
+        # Access audio_path first
+        ap = vt.audio_path
+        assert ap == expected_audio
+>       mock_process_video_flow.fn.assert_called_once_with(video_path=video_file)
+
+tests/test_video_transcript.py:111:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <MagicMock name='mock.fn' id='140492588986016'>, args = ()
+kwargs = {'video_path': PosixPath('/tmp/pytest-of-swebot/pytest-0/test_video_transcript_access_o0/test_video.mp4')}
+msg = "Expected 'fn' to be called once. Called 0 times."
+
+    def assert_called_once_with(self, /, *args, **kwargs):
+        """assert that the mock was called exactly once and that that call was
+        with the specified arguments."""
+        if not self.call_count == 1:
+            msg = ("Expected '%s' to be called once. Called %s times.%s"
+                   % (self._mock_name or 'mock',
+                      self.call_count,
+                      self._calls_repr()))
+>           raise AssertionError(msg)
+E           AssertionError: Expected 'fn' to be called once. Called 0 times.
+
+/home/jules/.pyenv/versions/3.12.11/lib/python3.12/unittest/mock.py:960: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_flows.py::test_process_video_flow_new_video - AssertionErro...
+FAILED tests/test_flows.py::test_process_video_flow_existing_audio - Assertio...
+FAILED tests/test_video_transcript.py::test_video_transcript_invalid_path_type
+FAILED tests/test_video_transcript.py::test_video_transcript_audio_path_lazy_evaluation
+FAILED tests/test_video_transcript.py::test_video_transcript_text_transcript_lazy_evaluation
+FAILED tests/test_video_transcript.py::test_video_transcript_access_order_calls_flow_once
+========================= 6 failed, 7 passed in 5.70s ==========================
+
+2025-06-25 11:09:57 - All checks completed
+2025-06-25 11:09:57 -
+=== TODO.md ===
+2025-06-25 11:09:57 - - [ ] **Initial Setup & File Creation:**
+    - [x] Create `PLAN.md` with a detailed version of this plan.
+    - [ ] Create `TODO.md` with a checkbox list of the plan items.
+    - [ ] Create `CHANGELOG.md` to track changes.
+- [ ] **Project Definition Cleanup:**
+    - [ ] Delete `.cursor/rules/0project.mdc`.
+    - [ ] Modify `cleanup.py`:
+        - [ ] Remove the `prefix()` function and its call.
+        - [ ] Update `REQUIRED_FILES` list.
+- [ ] **Consolidate Core Logic:**
+    - [ ] Analyze `src/twat_task/__main__.py` and `src/twat_task/task.py`.
+    - [ ] Delete or refactor `src/twat_task/__main__.py`.
+    - [ ] Adjust imports in `src/twat_task/__init__.py`.
+- [ ] **Streamline `cleanup.py`:**
+    - [ ] Remove the `repomix` function.
+    - [ ] Update shebang dependencies for `ruff` and `mypy`.
+- [ ] **Address Linter and Type Checker Issues:**
+    - [ ] Update `pre-commit-config.yaml`.
+    - [ ] Run linters/type checkers.
+    - [ ] Fix reported errors.
+- [ ] **Review `examples/testprefect_example.py`:**
+    - [ ] Decide on removal or relocation.
+    - [ ] Implement decision.
+- [ ] **Update `.gitignore`:**
+    - [ ] Add `CLEANUP.txt`.
+    - [ ] Add `REPO_CONTENT.txt`.
+    - [ ] Add `llms.txt`.
+- [ ] **Documentation & Final Review:**
+    - [ ] Update `README.md` if necessary.
+    - [ ] Update `TODO.md` and `PLAN.md`.
+    * [ ] Update `CHANGELOG.md`
+    - [ ] Run final checks.
+- [ ] **Submit Changes:**
+    - [ ] Commit changes.
+    - [ ] Push branch.

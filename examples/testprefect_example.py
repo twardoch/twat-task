@@ -7,7 +7,7 @@ from prefect import flow
 
 
 @flow(log_prints=True)
-def hello_world(name: str = "world", goodbye: bool = False):
+def hello_world(name: str = "world", *, goodbye: bool = False) -> None:
     if goodbye:
         pass
 

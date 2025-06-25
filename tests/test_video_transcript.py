@@ -1,7 +1,7 @@
 """Integration tests for the VideoTranscript model in twat_task.task."""
 
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 from pydantic import ValidationError
@@ -34,10 +34,12 @@ def test_video_transcript_instantiation(tmp_path: Path):
 def test_video_transcript_invalid_path_type():
     """Test VideoTranscript raises ValidationError for invalid video_path type."""
     with pytest.raises(ValidationError):
-        VideoTranscript(video_path="not_a_path_object") # type: ignore
+        VideoTranscript(video_path="not_a_path_object")  # type: ignore
 
 
-def test_video_transcript_audio_path_lazy_evaluation(tmp_path: Path, mock_process_video_flow: MagicMock):
+def test_video_transcript_audio_path_lazy_evaluation(
+    tmp_path: Path, mock_process_video_flow: MagicMock
+):
     """Test audio_path is computed lazily and calls the flow."""
     video_file = tmp_path / "test_video.mp4"
     video_file.touch()
@@ -58,16 +60,21 @@ def test_video_transcript_audio_path_lazy_evaluation(tmp_path: Path, mock_proces
     # Access again, should use cached value, no new call
     audio_p_cached = vt.audio_path
     assert audio_p_cached == expected_audio_output
-    mock_process_video_flow.fn.assert_called_once() # Still only one call
+    mock_process_video_flow.fn.assert_called_once()  # Still only one call
 
 
-def test_video_transcript_text_transcript_lazy_evaluation(tmp_path: Path, mock_process_video_flow: MagicMock):
+def test_video_transcript_text_transcript_lazy_evaluation(
+    tmp_path: Path, mock_process_video_flow: MagicMock
+):
     """Test text_transcript is computed lazily and calls the flow."""
     video_file = tmp_path / "test_video.mp4"
     video_file.touch()
 
     expected_transcript_output = "this is the expected transcript"
-    mock_process_video_flow.return_value = (tmp_path / "audio.mp3", expected_transcript_output)
+    mock_process_video_flow.return_value = (
+        tmp_path / "audio.mp3",
+        expected_transcript_output,
+    )
 
     vt = VideoTranscript(video_path=video_file)
 
@@ -82,10 +89,12 @@ def test_video_transcript_text_transcript_lazy_evaluation(tmp_path: Path, mock_p
     # Access again, should use cached value
     transcript_t_cached = vt.text_transcript
     assert transcript_t_cached == expected_transcript_output
-    mock_process_video_flow.fn.assert_called_once() # Still only one call
+    mock_process_video_flow.fn.assert_called_once()  # Still only one call
 
 
-def test_video_transcript_access_order_calls_flow_once(tmp_path: Path, mock_process_video_flow: MagicMock):
+def test_video_transcript_access_order_calls_flow_once(
+    tmp_path: Path, mock_process_video_flow: MagicMock
+):
     """Test that accessing audio_path then text_transcript (or vice-versa) calls flow only once."""
     video_file = tmp_path / "test_video.mp4"
     video_file.touch()
@@ -109,7 +118,7 @@ def test_video_transcript_access_order_calls_flow_once(tmp_path: Path, mock_proc
     mock_process_video_flow.fn.assert_called_once()
 
     # Test reverse access order
-    mock_process_video_flow.reset_mock() # Reset call count for new instance
+    mock_process_video_flow.reset_mock()  # Reset call count for new instance
     vt2 = VideoTranscript(video_path=video_file)
     tt2 = vt2.text_transcript
     assert tt2 == expected_text

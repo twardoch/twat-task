@@ -1,0 +1,35 @@
+- [ ] **Initial Setup & File Creation:**
+    - [x] Create `PLAN.md` with a detailed version of this plan.
+    - [ ] Create `TODO.md` with a checkbox list of the plan items.
+    - [ ] Create `CHANGELOG.md` to track changes.
+- [ ] **Project Definition Cleanup:**
+    - [ ] Delete `.cursor/rules/0project.mdc`.
+    - [ ] Modify `cleanup.py`:
+        - [ ] Remove the `prefix()` function and its call.
+        - [ ] Update `REQUIRED_FILES` list.
+- [ ] **Consolidate Core Logic:**
+    - [ ] Analyze `src/twat_task/__main__.py` and `src/twat_task/task.py`.
+    - [ ] Delete or refactor `src/twat_task/__main__.py`.
+    - [ ] Adjust imports in `src/twat_task/__init__.py`.
+- [ ] **Streamline `cleanup.py`:**
+    - [ ] Remove the `repomix` function.
+    - [ ] Update shebang dependencies for `ruff` and `mypy`.
+- [ ] **Address Linter and Type Checker Issues:**
+    - [ ] Update `pre-commit-config.yaml`.
+    - [ ] Run linters/type checkers.
+    - [ ] Fix reported errors.
+- [ ] **Review `examples/testprefect_example.py`:**
+    - [ ] Decide on removal or relocation.
+    - [ ] Implement decision.
+- [ ] **Update `.gitignore`:**
+    - [ ] Add `CLEANUP.txt`.
+    - [ ] Add `REPO_CONTENT.txt`.
+    - [ ] Add `llms.txt`.
+- [ ] **Documentation & Final Review:**
+    - [ ] Update `README.md` if necessary.
+    - [ ] Update `TODO.md` and `PLAN.md`.
+    * [ ] Update `CHANGELOG.md`
+    - [ ] Run final checks.
+- [ ] **Submit Changes:**
+    - [ ] Commit changes.
+    - [ ] Push branch.

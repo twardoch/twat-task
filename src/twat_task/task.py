@@ -8,15 +8,18 @@ for a high-level interface to video processing.
 
 from __future__ import annotations
 
+import json # PLC0415: Moved to top level
+import time # PLC0415: Moved to top level
 from functools import cached_property
 from pathlib import Path
+from random import choice, randint # PLC0415: Moved to top level, S311: random is fine for mock data
 from typing import TYPE_CHECKING
 
 from prefect import flow, task
 from pydantic import BaseModel, computed_field
 
 if TYPE_CHECKING:
-    from pathlib import Path  # noqa: F401 - Used in type hints
+    from pathlib import Path
 
 
 @task(retries=2)
@@ -38,21 +41,22 @@ def extract_audio_task(video_path: Path, audio_path: Path) -> None:
     """
 
     # Simulate fetching video metadata as JSON
-    import json
-    import time
-    from random import randint
+    # Imports moved to top level
 
     time.sleep(2)  # Simulate API call
 
     metadata = {
-        "duration": randint(60, 3600),
+        "duration": randint(60, 3600),  # nosec B311: random is fine for mock data
         "codec": "aac",
-        "bitrate": f"{randint(128, 320)}kbps",
+        "bitrate": f"{randint(128, 320)}kbps",  # nosec B311: random is fine for mock data
         "channels": 2,
         "sample_rate": 44100,
     }
 
-    metadata["duration"] // 10
+    duration_val = metadata["duration"]
+    if not isinstance(duration_val, int): # mypy check
+        raise TypeError("Duration should be an int")
+    duration_val // 10 # Original logic, now with type safety for mypy
     for _i in range(10):
         time.sleep(0.5)  # Simulate processing time
 
@@ -80,20 +84,23 @@ def generate_transcript_task(audio_path: Path) -> str:
         It simulates reading metadata from the audio file (which itself is
         a mock) and generating random text.
     """
-
-    import json
-    import time
-    from random import choice, randint
+    # Imports moved to top level
 
     # Simulate loading audio metadata
-    metadata = json.loads(audio_path.read_text())
+    loaded_metadata = json.loads(audio_path.read_text()) # Renamed to avoid conflict with outer scope 'metadata'
 
     time.sleep(1.5)
 
     # Simulate processing chunks with progress
-    duration = metadata["duration"]
+    duration = loaded_metadata.get("duration")
+    if not isinstance(duration, int): # mypy check
+        # Fallback or error for missing/invalid duration
+        duration = 60 # Default to 60 seconds if not found or invalid
+        # Or raise TypeError(f"Duration {duration} should be an int or is missing")
+
     chunk_size = 30  # Process in 30-second chunks
     chunks = duration // chunk_size
+
 
     words = [
         "hello",
@@ -115,6 +122,7 @@ def generate_transcript_task(audio_path: Path) -> str:
     for _i in range(chunks):
         time.sleep(0.3)  # Simulate API call and processing
         # Generate some random text
+        # nosec B311: random is fine for mock data
         chunk_text = " ".join(choice(words) for _ in range(randint(5, 15)))
         transcript_parts.append(chunk_text)
 
@@ -167,7 +175,7 @@ class VideoTranscript(BaseModel):
 
     video_path: Path
 
-    @computed_field
+    @computed_field(alias="audio_path", repr=False) # repr=False to avoid inclusion in model repr if desired
     @cached_property
     def audio_path(self) -> Path:
         """
@@ -180,7 +188,7 @@ class VideoTranscript(BaseModel):
         audio, _ = process_video_flow(self.video_path)
         return audio
 
-    @computed_field
+    @computed_field(alias="text_transcript", repr=False) # repr=False to avoid inclusion in model repr if desired
     @cached_property
     def text_transcript(self) -> str:
         """
