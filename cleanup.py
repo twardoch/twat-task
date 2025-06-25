@@ -1,9 +1,9 @@
 #!/usr/bin/env -S uv run -s
 # /// script
 # dependencies = [
-#   "ruff>=0.9.6",
+#   "ruff>=0.4.0", # Updated ruff version
 #   "pytest>=8.3.4",
-#   "mypy>=1.15.0",
+#   "mypy>=1.10.0", # Updated mypy version
 # ]
 # ///
 # this_file: cleanup.py
@@ -69,11 +69,13 @@ IGNORE_PATTERNS = [
     "build",
     "*.egg-info",
 ]
-REQUIRED_FILES = ["LOG.md", ".cursor/rules/0project.mdc", "TODO.md"]
+REQUIRED_FILES = ["LOG.md", "README.md", "TODO.md"]
 LOG_FILE = Path("CLEANUP.txt")
 
 # Ensure we're working from the script's directory
 os.chdir(Path(__file__).parent)
+
+MIN_ARGS = 2
 
 
 def new() -> None:
@@ -82,13 +84,14 @@ def new() -> None:
         LOG_FILE.unlink()
 
 
-def prefix() -> None:
-    """Write README.md content to log file."""
-    readme = Path(".cursor/rules/0project.mdc")
-    if readme.exists():
-        log_message("\n=== PROJECT STATEMENT ===")
-        content = readme.read_text()
+def read_and_log_file_content(file_path: Path, header: str) -> None:
+    """Reads a file and logs its content with a header."""
+    if file_path.exists():
+        log_message(f"\n=== {header} ===")
+        content = file_path.read_text()
         log_message(content)
+    else:
+        log_message(f"Warning: {file_path} not found, skipping logging its content.")
 
 
 def suffix() -> None:
@@ -108,15 +111,20 @@ def log_message(message: str) -> None:
         f.write(log_line)
 
 
-def run_command(cmd: list[str], check: bool = True) -> subprocess.CompletedProcess:
-    """Run a shell command and return the result."""
+def run_command(cmd: list[str], *, check: bool = True) -> subprocess.CompletedProcess:
+    """
+    Run a shell command and return the result.
+    The `cmd` parameter is constructed internally and should be safe.
+    """
+    # S603: `subprocess` call with `shell=False` and internally constructed `cmd` is a mitigated risk.
+    # For higher security, `cmd[0]` could be validated against an allowlist of commands.
     try:
         result = subprocess.run(
             cmd,
             check=check,
             capture_output=True,
             text=True,
-            shell=False,  # Explicitly set shell=False for security
+            shell=False,
         )
         if result.stdout:
             log_message(result.stdout)
@@ -234,6 +242,8 @@ class Cleanup:
                     "--unsafe-fixes",
                     "src",
                     "tests",
+                    "examples",
+                    "cleanup.py",
                 ],
                 check=False,
             )
@@ -246,13 +256,18 @@ class Cleanup:
                     "--respect-gitignore",
                     "src",
                     "tests",
+                    "examples",
+                    "cleanup.py",
                 ],
                 check=False,
             )
 
             # Run type checks
             log_message(">>>Running type checks...")
-            run_command(["python", "-m", "mypy", "src", "tests"], check=False)
+            run_command(
+                ["python", "-m", "mypy", "src", "tests", "examples", "cleanup.py"],
+                check=False,
+            )
 
             # Run tests
             log_message(">>> Running tests...")
@@ -264,7 +279,9 @@ class Cleanup:
 
     def status(self) -> None:
         """Show current repository status: tree structure, git status, and run checks."""
-        prefix()  # Add README.md content at start
+        read_and_log_file_content(
+            Path("README.md"), "README.md"
+        )  # Log README.md content at start
         self._print_header("Current Status")
 
         # Check required files
@@ -325,41 +342,6 @@ class Cleanup:
             log_message(f"Failed to push changes: {e}")
 
 
-def repomix(
-    *,
-    compress: bool = True,
-    remove_empty_lines: bool = True,
-    ignore_patterns: str = ".specstory/**/*.md,.venv/**,_private/**,CLEANUP.txt,**/*.json,*.lock",
-    output_file: str = "REPO_CONTENT.txt",
-) -> None:
-    """Combine repository files into a single text file.
-
-    Args:
-        compress: Whether to compress whitespace in output
-        remove_empty_lines: Whether to remove empty lines
-        ignore_patterns: Comma-separated glob patterns of files to ignore
-        output_file: Output file path
-    """
-    try:
-        # Build command
-        cmd = ["repomix"]
-        if compress:
-            cmd.append("--compress")
-        if remove_empty_lines:
-            cmd.append("--remove-empty-lines")
-        if ignore_patterns:
-            cmd.append("-i")
-            cmd.append(ignore_patterns)
-        cmd.extend(["-o", output_file])
-
-        # Run repomix
-        run_command(cmd)
-        log_message(f"Repository content mixed into {output_file}")
-
-    except Exception as e:
-        log_message(f"Failed to mix repository: {e}")
-
-
 def print_usage() -> None:
     """Print usage information."""
     log_message("Usage:")
@@ -374,7 +356,7 @@ def main() -> NoReturn:
     """Main entry point."""
     new()  # Clear log file
 
-    if len(sys.argv) < 2:
+    if len(sys.argv) < MIN_ARGS:
         print_usage()
         sys.exit(1)
 
@@ -396,7 +378,10 @@ def main() -> NoReturn:
             print_usage()
     except Exception as e:
         log_message(f"Error: {e}")
-    repomix()
+    # The repomix call was removed as it's expected to be run via npx externally.
+    # If REPO_CONTENT.txt generation is still desired as part of this script,
+    # the npx command should be called here using run_command.
+    # For now, assuming it's handled externally or no longer needed from this script.
     sys.stdout.write(Path("CLEANUP.txt").read_text())
     sys.exit(0)  # Ensure we exit with a status code
 
