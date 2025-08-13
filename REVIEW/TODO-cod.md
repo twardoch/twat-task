@@ -52,7 +52,8 @@ This plan proposes focused, incremental improvements. It does not change code ou
       from twat_task.__version__ import version as __version__
   except Exception:
       __version__ = (Path(__file__).with_name("__version__.py").read_text().strip()
-                     if (Path(__file__).with_name("__version__.py")).exists() else "0.0.0+local")
+      version_file = Path(__file__).with_name("__version__.py")
+      __version__ = version_file.read_text().strip() if version_file.exists() else "0.0.0+local"
   ```
 
 ## Phase 2 — Documentation and Examples
