@@ -115,4 +115,3 @@ This document catalogs all files and folders in the repository, includes a files
 - The package exposes `__version__` via `twat_task.__version__` in `__init__.py`; ensure `src/twat_task/__version__.py` exists at runtime (hatch-vcs generates it at build; dev installs may need a fallback).
 - `cleanup.py` references `.cursor/rules/0project.mdc` in REQUIRED_FILES/prefix(); that file is not present in the current repo snapshot. This will log an error in status and can be streamlined per PLAN.md recommendations.
 - CI uses Ruff for both linting and formatting, MyPy for typing, and a Python matrix; local Hatch scripts mirror these checks.
-

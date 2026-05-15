@@ -15,7 +15,7 @@ Example:
 """
 
 from __future__ import annotations
-from .__version__ import __version__  # noqa: F401
+from .__version__ import __version__
 
 
 from twat_task.task import (
@@ -28,7 +28,7 @@ from twat_task.task import (
 
 def main() -> None:
     """CLI entry point for twat-task."""
-    from twat_task.__main__ import main as cli_main  # noqa: PLC0415
+    from twat_task.__main__ import main as cli_main
 
     cli_main()
 
