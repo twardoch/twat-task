@@ -1,5 +1,4 @@
-"""
-twat_task - Video processing task utilities using Prefect for workflow management.
+"""twat-task: Video processing task utilities using Prefect for workflow management.
 
 This package provides a set of tasks and flows for processing video files,
 including audio extraction and transcription. It uses Prefect for workflow
@@ -15,7 +14,15 @@ Example:
     >>> print(vt.text_transcript)  # Generates transcript
 """
 
-from twat_task.__version__ import version as __version__
+from __future__ import annotations
+
+from importlib.metadata import PackageNotFoundError, version
+
+try:
+    __version__ = version("twat-task")
+except PackageNotFoundError:
+    __version__ = "0.0.0-dev"
+
 from twat_task.task import (
     VideoTranscript,
     extract_audio_task,
@@ -23,10 +30,19 @@ from twat_task.task import (
     process_video_flow,
 )
 
+
+def main() -> None:
+    """CLI entry point for twat-task."""
+    from twat_task.__main__ import main as cli_main  # noqa: PLC0415
+
+    cli_main()
+
+
 __all__ = [
     "VideoTranscript",
     "__version__",
     "extract_audio_task",
     "generate_transcript_task",
+    "main",
     "process_video_flow",
 ]

@@ -1,22 +1,49 @@
 """
-Core task functionality for video processing using Prefect.
+Video-processing workflow using Prefect.
 
-This module provides Prefect tasks for audio extraction and transcription,
-a Prefect flow to orchestrate these tasks, and a Pydantic model
-for a high-level interface to video processing.
+What is Prefect?
+----------------
+`Prefect <https://www.prefect.io>`_ is a Python workflow orchestration library.
+You decorate normal functions with ``@task`` and ``@flow``; Prefect then
+handles retries, logging, caching of intermediate results, and a web UI for
+monitoring runs.  A *task* is a single unit of work; a *flow* is a directed
+graph of tasks.
+
+What this module does
+----------------------
+Defines a two-step video-processing pipeline:
+
+1. :func:`extract_audio_task` — strip the audio track from a video file.
+2. :func:`generate_transcript_task` — convert that audio to a text transcript
+   (speech-to-text).
+
+Both tasks carry ``retries=2`` so transient failures (API timeouts, I/O
+hiccups) are handled automatically.
+
+:func:`process_video_flow` wires the two tasks together as a Prefect flow.
+It skips audio extraction if the ``.mp3`` file already exists (idempotent).
+
+:class:`VideoTranscript` is a Pydantic model with ``@cached_property``
+computed fields — accessing ``.audio_path`` or ``.text_transcript`` triggers
+the flow lazily and caches the result.
+
+Note: the current implementation uses **mock logic** (simulated delays +
+random text) so the module can run without actual video/audio dependencies.
+Replace the body of each task to plug in real tools such as ``ffmpeg`` or
+OpenAI Whisper.
 """
 
 from __future__ import annotations
 
-import json # PLC0415: Moved to top level
-import time # PLC0415: Moved to top level
+import json  # PLC0415: Moved to top level
+import time  # PLC0415: Moved to top level
 from functools import cached_property
 from pathlib import Path
-from random import choice, randint # PLC0415: Moved to top level, S311: random is fine for mock data
+from random import choice, randint  # PLC0415: Moved to top level, S311: random is fine for mock data
 from typing import TYPE_CHECKING
 
 from prefect import flow, task
-from pydantic import BaseModel, computed_field
+from pydantic import BaseModel, computed_field, field_validator
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -54,9 +81,10 @@ def extract_audio_task(video_path: Path, audio_path: Path) -> None:
     }
 
     duration_val = metadata["duration"]
-    if not isinstance(duration_val, int): # mypy check
-        raise TypeError("Duration should be an int")
-    duration_val // 10 # Original logic, now with type safety for mypy
+    if not isinstance(duration_val, int):  # mypy check
+        msg = "Duration should be an int"
+        raise TypeError(msg)
+    duration_val // 10  # Original logic, now with type safety for mypy
     for _i in range(10):
         time.sleep(0.5)  # Simulate processing time
 
@@ -87,20 +115,19 @@ def generate_transcript_task(audio_path: Path) -> str:
     # Imports moved to top level
 
     # Simulate loading audio metadata
-    loaded_metadata = json.loads(audio_path.read_text()) # Renamed to avoid conflict with outer scope 'metadata'
+    loaded_metadata = json.loads(audio_path.read_text())  # Renamed to avoid conflict with outer scope 'metadata'
 
     time.sleep(1.5)
 
     # Simulate processing chunks with progress
     duration = loaded_metadata.get("duration")
-    if not isinstance(duration, int): # mypy check
+    if not isinstance(duration, int):  # mypy check
         # Fallback or error for missing/invalid duration
-        duration = 60 # Default to 60 seconds if not found or invalid
+        duration = 60  # Default to 60 seconds if not found or invalid
         # Or raise TypeError(f"Duration {duration} should be an int or is missing")
 
     chunk_size = 30  # Process in 30-second chunks
     chunks = duration // chunk_size
-
 
     words = [
         "hello",
@@ -175,7 +202,21 @@ class VideoTranscript(BaseModel):
 
     video_path: Path
 
-    @computed_field(alias="audio_path", repr=False) # repr=False to avoid inclusion in model repr if desired
+    @field_validator("video_path", mode="before")
+    @classmethod
+    def _validate_video_path(cls, value: object) -> Path:
+        """Require callers to pass a pathlib.Path instead of coercing strings."""
+        if not isinstance(value, Path):
+            msg = "video_path must be a pathlib.Path instance"
+            raise ValueError(msg)
+        return value
+
+    @cached_property
+    def _processed_video(self) -> tuple[Path, str]:
+        """Run the video-processing flow once and cache both outputs."""
+        return process_video_flow(self.video_path)
+
+    @computed_field(alias="audio_path", repr=False)  # type: ignore[prop-decorator]
     @cached_property
     def audio_path(self) -> Path:
         """
@@ -185,10 +226,10 @@ class VideoTranscript(BaseModel):
         `process_video_flow` to extract audio and generate the transcript.
         The result is cached.
         """
-        audio, _ = process_video_flow(self.video_path)
+        audio, _ = self._processed_video
         return audio
 
-    @computed_field(alias="text_transcript", repr=False) # repr=False to avoid inclusion in model repr if desired
+    @computed_field(alias="text_transcript", repr=False)  # type: ignore[prop-decorator]
     @cached_property
     def text_transcript(self) -> str:
         """
@@ -198,5 +239,5 @@ class VideoTranscript(BaseModel):
         `process_video_flow` to extract audio and generate the transcript.
         The result is cached.
         """
-        _, transcript = process_video_flow(self.video_path)
+        _, transcript = self._processed_video
         return transcript

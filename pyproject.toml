@@ -61,6 +61,9 @@ Source = "https://github.com/twardoch/twat-task"
 [project.entry-points."twat.plugins"]
 task = "twat_task"
 
+[project.scripts]
+twat-task = "twat_task:main"
+
 # Version configuration using VCS (Git)
 [tool.hatch.version]
 source = "vcs"

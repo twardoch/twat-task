@@ -63,6 +63,13 @@ This command installs the package along with its core and development dependenci
 ## Usage
 
 `twat-task` is primarily designed to be used programmatically within your Python applications.
+It also follows the standard `twat` plugin contract: the entry point name is `task`, and its lightweight CLI can be invoked with:
+
+```bash
+python -m twat_task
+twat-task
+twat task
+```
 
 ### Programmatic Usage
 

@@ -2,15 +2,13 @@
 
 import json
 from pathlib import Path
-from unittest.mock import Mock, patch # Added Mock for type hint
+from unittest.mock import Mock, patch  # Added Mock for type hint
 
 import pytest
 from twat_task.task import extract_audio_task, generate_transcript_task
 
 
-def test_extract_audio_task_creates_output_file(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_extract_audio_task_creates_output_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Test that extract_audio_task creates an output file with JSON content."""
     monkeypatch.setattr("time.sleep", lambda *_: None)  # ARG005: Use *args or _
 
@@ -46,17 +44,13 @@ def test_extract_audio_task_simulates_processing(tmp_path: Path) -> None:
         # Expect sleeps: 1 initial, 10 in loop (total 11)
         # Original sleeps: time.sleep(2) and 10 * time.sleep(0.5)
         # Ruff S101: allow assert
-        assert (
-            mock_sleep.call_count >= 2
-        )  # Check if sleep was called at least for the main parts
+        assert mock_sleep.call_count >= 2  # Check if sleep was called at least for the main parts
 
 
 # Tests for generate_transcript_task
 
 
-def test_generate_transcript_task_returns_string(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_generate_transcript_task_returns_string(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Test that generate_transcript_task returns a string."""
     monkeypatch.setattr("time.sleep", lambda *_: None)  # ARG005: Use *args or _
 
@@ -88,8 +82,9 @@ def test_generate_transcript_task_simulates_processing(tmp_path: Path) -> None:
         # For duration 180, N = 180 // 30 = 6 calls.
         # Total expected calls = 1 (initial) + 6 (loop) = 7 calls.
         duration_from_mock = mock_metadata_content["duration"]
-        if not isinstance(duration_from_mock, int): # mypy check
-            raise TypeError("Duration in mock data must be an int for this test.")
+        if not isinstance(duration_from_mock, int):  # mypy check
+            msg = "Duration in mock data must be an int for this test."
+            raise TypeError(msg)
         expected_sleep_calls = 1 + (duration_from_mock // 30)
         # Ruff S101: allow assert
         assert mock_sleep.call_count == expected_sleep_calls

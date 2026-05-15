@@ -10,7 +10,7 @@ from twat_task.task import VideoTranscript
 
 
 @pytest.fixture
-def mock_process_video_flow(monkeypatch):
+def mock_process_video_flow(monkeypatch: pytest.MonkeyPatch) -> MagicMock:
     """Fixture to mock the process_video_flow used by VideoTranscript."""
     mock_flow = MagicMock()
     # Set a default return value, can be overridden in tests
@@ -22,7 +22,7 @@ def mock_process_video_flow(monkeypatch):
     return mock_flow
 
 
-def test_video_transcript_instantiation(tmp_path: Path):
+def test_video_transcript_instantiation(tmp_path: Path) -> None:
     """Test VideoTranscript can be instantiated with a video_path."""
     video_file = tmp_path / "test_video.mp4"
     video_file.touch()
@@ -31,15 +31,13 @@ def test_video_transcript_instantiation(tmp_path: Path):
     assert vt.video_path == video_file
 
 
-def test_video_transcript_invalid_path_type():
+def test_video_transcript_invalid_path_type() -> None:
     """Test VideoTranscript raises ValidationError for invalid video_path type."""
     with pytest.raises(ValidationError):
         VideoTranscript(video_path="not_a_path_object")  # type: ignore
 
 
-def test_video_transcript_audio_path_lazy_evaluation(
-    tmp_path: Path, mock_process_video_flow: MagicMock
-):
+def test_video_transcript_audio_path_lazy_evaluation(tmp_path: Path, mock_process_video_flow: MagicMock) -> None:
     """Test audio_path is computed lazily and calls the flow."""
     video_file = tmp_path / "test_video.mp4"
     video_file.touch()
@@ -50,22 +48,20 @@ def test_video_transcript_audio_path_lazy_evaluation(
     vt = VideoTranscript(video_path=video_file)
 
     # Flow should not have been called yet
-    mock_process_video_flow.fn.assert_not_called()
+    mock_process_video_flow.assert_not_called()
 
     # Access audio_path
     audio_p = vt.audio_path
     assert audio_p == expected_audio_output
-    mock_process_video_flow.fn.assert_called_once_with(video_path=video_file)
+    mock_process_video_flow.assert_called_once_with(video_file)
 
     # Access again, should use cached value, no new call
     audio_p_cached = vt.audio_path
     assert audio_p_cached == expected_audio_output
-    mock_process_video_flow.fn.assert_called_once()  # Still only one call
+    mock_process_video_flow.assert_called_once()  # Still only one call
 
 
-def test_video_transcript_text_transcript_lazy_evaluation(
-    tmp_path: Path, mock_process_video_flow: MagicMock
-):
+def test_video_transcript_text_transcript_lazy_evaluation(tmp_path: Path, mock_process_video_flow: MagicMock) -> None:
     """Test text_transcript is computed lazily and calls the flow."""
     video_file = tmp_path / "test_video.mp4"
     video_file.touch()
@@ -79,22 +75,20 @@ def test_video_transcript_text_transcript_lazy_evaluation(
     vt = VideoTranscript(video_path=video_file)
 
     # Flow should not have been called yet
-    mock_process_video_flow.fn.assert_not_called()
+    mock_process_video_flow.assert_not_called()
 
     # Access text_transcript
     transcript_t = vt.text_transcript
     assert transcript_t == expected_transcript_output
-    mock_process_video_flow.fn.assert_called_once_with(video_path=video_file)
+    mock_process_video_flow.assert_called_once_with(video_file)
 
     # Access again, should use cached value
     transcript_t_cached = vt.text_transcript
     assert transcript_t_cached == expected_transcript_output
-    mock_process_video_flow.fn.assert_called_once()  # Still only one call
+    mock_process_video_flow.assert_called_once()  # Still only one call
 
 
-def test_video_transcript_access_order_calls_flow_once(
-    tmp_path: Path, mock_process_video_flow: MagicMock
-):
+def test_video_transcript_access_order_calls_flow_once(tmp_path: Path, mock_process_video_flow: MagicMock) -> None:
     """Test that accessing audio_path then text_transcript (or vice-versa) calls flow only once."""
     video_file = tmp_path / "test_video.mp4"
     video_file.touch()
@@ -108,22 +102,22 @@ def test_video_transcript_access_order_calls_flow_once(
     # Access audio_path first
     ap = vt.audio_path
     assert ap == expected_audio
-    mock_process_video_flow.fn.assert_called_once_with(video_path=video_file)
+    mock_process_video_flow.assert_called_once_with(video_file)
 
     # Then access text_transcript
     tt = vt.text_transcript
     assert tt == expected_text
     # The flow should still have been called only once due to caching by process_video_flow itself
     # and caching of computed fields
-    mock_process_video_flow.fn.assert_called_once()
+    mock_process_video_flow.assert_called_once()
 
     # Test reverse access order
     mock_process_video_flow.reset_mock()  # Reset call count for new instance
     vt2 = VideoTranscript(video_path=video_file)
     tt2 = vt2.text_transcript
     assert tt2 == expected_text
-    mock_process_video_flow.fn.assert_called_once_with(video_path=video_file)
+    mock_process_video_flow.assert_called_once_with(video_file)
 
     ap2 = vt2.audio_path
     assert ap2 == expected_audio
-    mock_process_video_flow.fn.assert_called_once()
+    mock_process_video_flow.assert_called_once()
