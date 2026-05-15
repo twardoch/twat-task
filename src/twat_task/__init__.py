@@ -15,13 +15,8 @@ Example:
 """
 
 from __future__ import annotations
+from .__version__ import __version__  # noqa: F401
 
-from importlib.metadata import PackageNotFoundError, version
-
-try:
-    __version__ = version("twat-task")
-except PackageNotFoundError:
-    __version__ = "0.0.0-dev"
 
 from twat_task.task import (
     VideoTranscript,
