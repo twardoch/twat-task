@@ -113,7 +113,6 @@ typing = "mypy --install-types --non-interactive {args:src/twat_task tests}"
 style = ["ruff check {args:.}", "ruff format {args:.}"]
 fmt = ["ruff format {args:.}", "ruff check --fix {args:.}"]
 all = ["style", "typing"]
-
 #------------------------------------------------------------------------------
 # CODE QUALITY TOOLS
 #------------------------------------------------------------------------------
@@ -237,11 +236,13 @@ docs = [
 all = [
     "prefect>=3.1.0",
     "pydantic>=2.0.0",
-    "twat>=1.8.1", # Main twat package
-
+    "twat>=1.8.1", # Main twat package,
+    "twat-mp[all]>=2.6.4",
 ]
-
 # Test environment configuration
+parallel = [
+    "twat-mp[all]>=2.6.4",
+]
 [tool.hatch.envs.test]
 dependencies = [".[test]"]
 
