@@ -41,6 +41,7 @@ classifiers = [
 ]
 
 dependencies = [
+    "fire>=0.6.0",
     "prefect>=3.1.0",
     "pydantic>=2.0.0",
     "twat>=1.8.1",
@@ -62,7 +63,9 @@ Source = "https://github.com/twardoch/twat-task"
 task = "twat_task"
 
 [project.scripts]
-twat-task = "twat_task:main"
+twat-task         = "twat_task.__main__:main"
+twat-task-version = "twat_task.__main__:cmd_version"
+twat-task-info    = "twat_task.__main__:cmd_info"
 
 # Version configuration using VCS (Git)
 [tool.hatch.version]
