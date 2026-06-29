@@ -27,10 +27,12 @@ from twat_task.task import (
 
 
 def main() -> None:
-    """CLI entry point for twat-task."""
-    from twat_task.__main__ import main as cli_main
+    """Print package version — lightweight smoke-testable entry point.
 
-    cli_main()
+    The full Fire-based CLI dispatcher lives in :mod:`twat_task.__main__`
+    and is exposed via the ``twat-task`` console script.
+    """
+    print(f"twat-task v{__version__}")
 
 
 __all__ = [
